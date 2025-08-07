@@ -278,3 +278,65 @@ input.yellow_thumb::-webkit-slider-thumb {
     overflow: auto;
     max-height: 500px; /* Set a maximum height for the list */
 }
+
+/* Mark Busy Days Button */
+#mark_busy_button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #FFC000;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    transition: all 0.3s ease;
+    max-width: 250px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block !important;
+}
+
+#mark_busy_button:hover {
+    background-color: #FFB000;
+    transform: scale(1.05);
+}
+
+#mark_busy_button.active {
+    background-color: #FF6B6B;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+/* Busy Day Styling */
+.calendar-day.busy {
+    background-color: #FFE066 !important;
+    border-color: #FFC000 !important;
+    cursor: pointer;
+}
+
+.calendar-day.busy::after {
+    content: "Busy on this day";
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    background-color: #FFC000;
+    color: white;
+    font-size: 10px;
+    padding: 1px 3px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+/* Add hover effect for calendar days in mark busy mode */
+.calendar-day:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}

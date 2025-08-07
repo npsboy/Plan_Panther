@@ -6,6 +6,8 @@ let currentMonth = new Date();
 let currentYear = new Date().getFullYear();
 let today = new Date();
 let currentTimetable = null; // Store the generated timetable
+let DaysWhenBusy = []; // Array to store busy days
+let markBusyMode = false; // Flag for mark busy mode
 
 async function load_page (page){
     response = await fetch(page);
@@ -219,6 +221,19 @@ function generate_calendar() {
         }
         dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
         dayElement.dataset.date = date.toISOString().split("T")[0];
+        
+        // Check if this day is marked as busy
+        if (DaysWhenBusy.includes(dayElement.dataset.date)) {
+            dayElement.classList.add("busy");
+        }
+        
+        // Add click event listener for marking busy days
+        dayElement.addEventListener('click', function() {
+            if (markBusyMode) {
+                toggleBusyDay(this);
+            }
+        });
+        
         calendar.appendChild(dayElement);
     }
 
@@ -233,6 +248,19 @@ function generate_calendar() {
         }
         dayElement.innerHTML = `<span>${day}</span>`;
         dayElement.dataset.date = date.toISOString().split("T")[0];
+        
+        // Check if this day is marked as busy
+        if (DaysWhenBusy.includes(dayElement.dataset.date)) {
+            dayElement.classList.add("busy");
+        }
+        
+        // Add click event listener for marking busy days
+        dayElement.addEventListener('click', function() {
+            if (markBusyMode) {
+                toggleBusyDay(this);
+            }
+        });
+        
         calendar.appendChild(dayElement);
     }
 
@@ -251,6 +279,19 @@ function generate_calendar() {
             }
             dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
             dayElement.dataset.date = date.toISOString().split("T")[0];
+            
+            // Check if this day is marked as busy
+            if (DaysWhenBusy.includes(dayElement.dataset.date)) {
+                dayElement.classList.add("busy");
+            }
+            
+            // Add click event listener for marking busy days
+            dayElement.addEventListener('click', function() {
+                if (markBusyMode) {
+                    toggleBusyDay(this);
+                }
+            });
+            
             calendar.appendChild(dayElement);
         }
     }
@@ -258,6 +299,7 @@ function generate_calendar() {
 
 function generate_timetable() {
     console.log('Generating timetable for subjects:', subjects); // Debug
+    console.log('Days marked as busy:', DaysWhenBusy); // Debug
     if (subjects.length === 0) {
         console.log('No subjects found, returning empty timetable'); // Debug
         return {};
@@ -317,7 +359,8 @@ function generate_timetable() {
         reservedDay.setDate(examDate.getDate() - 1);
         const reservedDayString = reservedDay.toISOString().split('T')[0];
         
-        if (reservedDay >= tomorrow) {
+        // Only reserve the day if it's not busy and is within our date range
+        if (reservedDay >= tomorrow && !DaysWhenBusy.includes(reservedDayString)) {
             reservedDays.add(reservedDayString);
             subjectReservedDays[subject.name] = reservedDayString;
             
@@ -329,8 +372,14 @@ function generate_timetable() {
         }
     });
     
-    // Get assignable time slots (all slots minus reserved slots)
-    const assignableTimeSlots = allTimeSlots.filter(slot => !reservedTimeSlots.has(slot));
+    // Get assignable time slots (all slots minus reserved slots and busy days)
+    const assignableTimeSlots = allTimeSlots.filter(slot => {
+        // Extract the date from the slot (remove time suffix for Sunday slots)
+        const slotDate = slot.includes('_') ? slot.split('_')[0] : slot;
+        
+        // Exclude if slot is reserved or if the day is marked as busy
+        return !reservedTimeSlots.has(slot) && !DaysWhenBusy.includes(slotDate);
+    });
     
     // Step 2: Calculate Weights
     const subjectWeights = {};
@@ -369,7 +418,7 @@ function generate_timetable() {
         subjects.forEach(otherSubject => {
             if (otherSubject.name !== subject.name) {
                 const otherExamDate = new Date(otherSubject.date);
-                if (otherExamDate < examDate) {
+                if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
                     // Check if other exam is on Sunday
                     if (otherExamDate.getUTCDay() === 0) {
                         availableSlots.push(otherSubject.date + '_morning');
@@ -451,7 +500,7 @@ function generate_timetable() {
         subjects.forEach(otherSubject => {
             if (otherSubject.name !== subject.name) {
                 const otherExamDate = new Date(otherSubject.date);
-                if (otherExamDate < examDate) {
+                if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
                     if (otherExamDate.getUTCDay() === 0) {
                         // Sunday exam day - add both slots
                         if (!usedTimeSlots.has(otherSubject.date + '_morning')) {
@@ -1028,4 +1077,47 @@ function exportToGoogleCalendar() {
         console.error('Export failed:', error);
         alert('Export failed. Please try again.');
     }
+}
+
+// Mark busy days functionality
+function toggle_mark_busy_mode() {
+    markBusyMode = !markBusyMode;
+    const button = document.getElementById('mark_busy_button');
+    
+    if (markBusyMode) {
+        button.textContent = 'Click days to mark as busy (Click here to exit)';
+        button.classList.add('active');
+        // Add visual indication that we're in mark busy mode
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'crosshair';
+        });
+    } else {
+        button.textContent = 'Mark days when you are not free';
+        button.classList.remove('active');
+        // Reset cursor for calendar days
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'pointer';
+        });
+    }
+}
+
+function toggleBusyDay(dayElement) {
+    const date = dayElement.dataset.date;
+    const index = DaysWhenBusy.indexOf(date);
+    
+    if (index === -1) {
+        // Day is not busy, mark it as busy
+        DaysWhenBusy.push(date);
+        dayElement.classList.add('busy');
+        console.log(`Marked ${date} as busy`);
+    } else {
+        // Day is busy, remove it from busy days
+        DaysWhenBusy.splice(index, 1);
+        dayElement.classList.remove('busy');
+        console.log(`Removed ${date} from busy days`);
+    }
+    
+    console.log('All busy days:', DaysWhenBusy); // Debug log
 }
