@@ -1,0 +1,107 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensure padding and borders are included in element dimensions */
+}
+
+body {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 80px;
+  background-color: #ffffff;
+  height: 100vh; /* Ensure body height matches viewport height */
+  overflow: hidden; /* Prevent scrolling if content exceeds viewport */
+}
+
+.container {
+  display: flex;
+  height: 100%; /* Ensure container height matches the body height */
+}
+
+.left, .right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff; /* Ensure the background is white */
+}
+
+.left {
+  align-items: flex-start; /* Left-align content */
+  padding-left: 20px; /* Optional: Add padding for spacing */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.logo img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.logo h1 {
+    font-size: 28px;
+    margin: 0;
+}
+
+.headline {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 0 0 20px;
+}
+
+.activated {
+    color: #0a3f2f;
+    font-size: 60px;
+}
+
+.description {
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+
+.btn {
+    padding: 14px 30px;
+    font-size: 18px;
+    background-color: #1f3242;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    background-color: #14242f;
+}
+
+.right img {
+    width: 450px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+    body {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .left, .right {
+        max-width: 100%;
+    }
+
+    .right img {
+        width: 100%;
+        margin-top: 30px;
+    }
+}

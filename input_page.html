@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="input_page_styles.css">
+<body>
+    
+    <div id="left_container">
+        <div id="left_menu">  
+
+            <h1 style="text-align: center; color: #2C3E50; font-family: Arial black, Helvetica, sans-serif;">Plan Panther</h1>
+
+            <div class="button_holder1">
+                <button class="button add" onclick="show_card()"> Add +</button>
+            </div>
+
+            <br><br><br>
+
+            <div id="subjects_list"> 
+
+                <br><br>
+                <p style="text-align: center; font-size: 20px;"> Your subjects will be displayed here as you add them </p>
+
+            </div>
+
+            <div class="button_holder1">
+                <button class="button submit">Make Study Plan</button>
+            </div>
+
+            <div class="button_holder1">
+                <button class="button export" onclick="exportToGoogleCalendar()">Export to Google Calendar</button>
+            </div>
+
+        </div>
+        <div id="right_calendar">
+            <h2 style="text-align: center; color: #2C3E50; font-family: Arial black, Helvetica, sans-serif;">Study Plan</h2>
+            <div id="calendar_navigation">
+                <button id="prev_month" onclick="change_month(-1)">&#8592; Previous</button>
+                <span id="current_month"></span>
+                <button id="next_month" onclick="change_month(1)">Next &#8594;</button>
+            </div>
+            <div id="day_labels">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+            <div id="calendar"></div>
+        </div>
+    </div>
+
+    <div id="background_darkener" onclick="cancel_card()">
+        <div id="card">
+            <div id="details">
+
+                <input type="text"  id="subject_name" placeholder="Subject Name">
+                <br><br><br>
+                <div id="date_OE"> 
+                    Date of Exam:
+                    <input type="date" id="subject_date">
+                </div>
+                <br><br><br>
+                <div id="difficulty">
+                    Difficulty:
+                    <input type="range" min="1" max="4" value="2" class="green_thumb" id="subject_difficulty">
+                </div>
+                <p id="difficulty_text" style="text-align: center; padding-left: 50px;">Easy</p>
+
+            </div>
+
+            <br><br>
+
+            <button class="button add" style="align-self: center;" onclick="add_subject()"> Save  </button>
+
+        </div>
+    </div>
+
+</body>
