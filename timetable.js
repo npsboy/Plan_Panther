@@ -725,8 +725,40 @@ function add_subject(event) {
         alert("Please enter a subject name.");
         add_subject.isProcessing = false; // Reset flag
         return;
-    } else if (subject_date == "" || new Date(subject_date) <= today) {
+    }
+    
+    // Check for duplicate subject names (case-insensitive)
+    const duplicateSubject = subjects.find(subject => 
+        subject.name.toLowerCase() === subject_name.toLowerCase() && 
+        (adding_new_subject || subjects.indexOf(subject) !== edit_subject_no)
+    );
+    if (duplicateSubject) {
+        alert("Subject already added!");
+        add_subject.isProcessing = false; // Reset flag
+        return;
+    }
+    
+    if (subject_date == "") {
+        alert("Please enter a subject date.");
+        add_subject.isProcessing = false; // Reset flag
+        return;
+    }
+    
+    // Check if exam date is at least 2 days from today
+    const examDate = new Date(subject_date);
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 2);
+    
+    // Set times to midnight for proper date comparison
+    examDate.setHours(0, 0, 0, 0);
+    minDate.setHours(0, 0, 0, 0);
+    
+    if (examDate <= today) {
         alert("Please enter a valid subject date.");
+        add_subject.isProcessing = false; // Reset flag
+        return;
+    } else if (examDate < minDate) {
+        alert("First exam is too soon! Give yourself at least 2 days.");
         add_subject.isProcessing = false; // Reset flag
         return;
     } else {
