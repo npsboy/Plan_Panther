@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Plan - Plan Panther</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2C3E50;
+            padding-bottom: 20px;
+        }
+        .header-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px auto;
+            display: block;
+        }
+        .header h1 {
+            color: #2C3E50;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .month-container {
+            page-break-inside: avoid;
+            margin-bottom: 40px;
+        }
+        .month-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2C3E50;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            border: 1px solid #ddd;
+            background-color: #ddd;
+        }
+        .day-header {
+            background-color: #2C3E50;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .calendar-day {
+            background-color: white !important;
+            min-height: 80px;
+            padding: 4px;
+            position: relative;
+            border: none;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .calendar-day.overflow {
+            background-color: #f9f9f9 !important;
+            color: #999;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .calendar-day.sunday {
+            background-color: #fff5f5 !important;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .calendar-day.busy {
+            background-color: #fff3cd !important;
+            border: 2px solid #FFC000;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 2px;
+            font-size: 12px;
+        }
+        .calendar-event {
+            font-size: 9px;
+            padding: 1px 3px;
+            margin: 1px 0;
+            border-radius: 2px;
+            color: white;
+            line-height: 1.2;
+            word-wrap: break-word;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .exam-event {
+            background-color: #FF0000 !important;
+            border: 2px solid #CC0000;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .study-event {
+            background-color: #407CFF !important;
+            border: 2px solid #2E5FCC;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .busy-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 8px;
+            color: #FFC000 !important;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa !important;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #2C3E50 !important;
+        }
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            vertical-align: middle;
+            border-radius: 2px;
+            border: 1px solid #333;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .subjects-list {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa !important;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .subjects-list h3 {
+            margin-top: 0;
+            color: #2C3E50 !important;
+        }
+        .subject-item {
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: white !important;
+            border-radius: 3px;
+            border-left: 4px solid #2C3E50;
+            border: 1px solid #ddd;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        @media print {
+            body { 
+                margin: 0; 
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .month-container { 
+                page-break-after: always; 
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .month-container:last-child { 
+                page-break-after: avoid; 
+            }
+            * {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {{LOGO_PLACEHOLDER}}
+        <h1>Study Plan</h1>
+        <p>Generated by Plan Panther</p>
+        <p>Date: {{DATE_PLACEHOLDER}}</p>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+            💡 <strong>To see colors in PDF:</strong> In your browser's print dialog, enable "Background graphics" or "Print backgrounds"
+        </p>
+    </div>
+    {{CALENDAR_CONTENT}}
+    {{LEGEND_CONTENT}}
+    {{SUBJECTS_CONTENT}}
+</body>
+</html>

@@ -141,10 +141,21 @@ function setupInputPageListeners() {
     }
     
     // Set up export button
-    const exportButton = document.querySelector('.button.export');
+    const exportButton = document.getElementById('export-main-btn');
     if (exportButton) {
-        exportButton.addEventListener('click', exportToGoogleCalendar);
+        exportButton.addEventListener('click', toggleExportDropdown);
     }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.export-dropdown');
+        if (dropdown && !dropdown.contains(event.target)) {
+            const options = document.getElementById('export-options');
+            if (options) {
+                options.classList.remove('show');
+            }
+        }
+    });
 }
 
 
@@ -970,6 +981,12 @@ function getRandomLowSaturationColor() {
 }
 
 function exportToGoogleCalendar() {
+    // Hide the dropdown
+    const options = document.getElementById('export-options');
+    if (options) {
+        options.classList.remove('show');
+    }
+    
     if (subjects.length === 0) {
         alert('No subjects to export. Please add subjects first.');
         return;
@@ -987,10 +1004,23 @@ function exportToGoogleCalendar() {
     let icsContent = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Timetable Maker//Timetable Export//EN\r\nCALSCALE:GREGORIAN\r\n`;
 
     // Add events from the timetable
-    Object.entries(timetable).forEach(([dateString, eventText]) => {
+    Object.entries(timetable).forEach(([dateString, eventData]) => {
         const eventDate = new Date(dateString);
         const formattedDate = eventDate.toISOString().slice(0, 10).replace(/-/g, '');
         
+        // Handle array of events (Sunday with multiple slots)
+        if (Array.isArray(eventData)) {
+            eventData.forEach((eventText, index) => {
+                processEventForExport(eventText, formattedDate, index);
+            });
+        } else {
+            // Handle single event (string)
+            processEventForExport(eventData, formattedDate, 0);
+        }
+    });
+
+    // Helper function to process individual events
+    function processEventForExport(eventText, formattedDate, eventIndex) {
         // Handle combined events (Exam: A, Study: B) by creating separate events
         if (eventText.includes('Exam:') && eventText.includes('Study:')) {
             const parts = eventText.split(', ');
@@ -999,7 +1029,7 @@ function exportToGoogleCalendar() {
             
             // Create exam event
             const examSubject = examPart.split(': ')[1];
-            const examUid = `${formattedDate}-Exam-${examSubject.replace(/\s+/g, '')}-${Date.now()}@timetablemaker.com`;
+            const examUid = `${formattedDate}-Exam-${examSubject.replace(/\s+/g, '')}-${Date.now()}-${eventIndex}@timetablemaker.com`;
             
             icsContent += `BEGIN:VEVENT\r\n`;
             icsContent += `UID:${examUid}\r\n`;
@@ -1013,7 +1043,7 @@ function exportToGoogleCalendar() {
             
             // Create study event
             const studySubject = studyPart.split(': ')[1];
-            const studyUid = `${formattedDate}-Study-${studySubject.replace(/\s+/g, '')}-${Date.now() + 1}@timetablemaker.com`;
+            const studyUid = `${formattedDate}-Study-${studySubject.replace(/\s+/g, '')}-${Date.now() + 1}-${eventIndex}@timetablemaker.com`;
             
             icsContent += `BEGIN:VEVENT\r\n`;
             icsContent += `UID:${studyUid}\r\n`;
@@ -1029,7 +1059,7 @@ function exportToGoogleCalendar() {
             const [eventType, subjectName] = eventText.split(': ');
             
             // Create unique ID for the event
-            const uid = `${formattedDate}-${eventType}-${subjectName.replace(/\s+/g, '')}-${Date.now()}@timetablemaker.com`;
+            const uid = `${formattedDate}-${eventType}-${subjectName.replace(/\s+/g, '')}-${Date.now()}-${eventIndex}@timetablemaker.com`;
             
             // Set event duration (2 hours for study, 3 hours for exam)
             const startTime = eventType === 'Study' ? '090000' : '100000'; // 9 AM for study, 10 AM for exam
@@ -1052,7 +1082,7 @@ function exportToGoogleCalendar() {
             
             icsContent += `END:VEVENT\r\n`;
         }
-    });
+    }
 
     icsContent += `END:VCALENDAR\r\n`;
 
@@ -1077,6 +1107,307 @@ function exportToGoogleCalendar() {
         console.error('Export failed:', error);
         alert('Export failed. Please try again.');
     }
+}
+
+// Export dropdown functionality
+function toggleExportDropdown() {
+    const options = document.getElementById('export-options');
+    if (options) {
+        options.classList.toggle('show');
+    }
+}
+
+// Placeholder function for PDF export
+function printAsPDF() {
+    // Hide the dropdown after clicking
+    const options = document.getElementById('export-options');
+    if (options) {
+        options.classList.remove('show');
+    }
+    
+    if (subjects.length === 0) {
+        alert('No subjects to export. Please add subjects and generate a timetable first.');
+        return;
+    }
+
+    // Generate the current timetable
+    const timetable = generate_timetable();
+    
+    if (Object.keys(timetable).length === 0) {
+        alert('No timetable generated. Please generate a timetable first.');
+        return;
+    }
+    
+    generatePDF(timetable);
+}
+
+function generatePDF(timetable) {
+    // Get all dates in the timetable to determine the range
+    const allDates = Object.keys(timetable).map(date => new Date(date));
+    if (allDates.length === 0) {
+        alert('No events to export.');
+        return;
+    }
+    
+    const minDate = new Date(Math.min(...allDates));
+    const maxDate = new Date(Math.max(...allDates));
+    
+    // Generate all months between min and max date
+    const monthsToRender = [];
+    const currentDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    const endDate = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+    
+    while (currentDate <= endDate) {
+        monthsToRender.push(new Date(currentDate));
+        currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+    
+    // Load template and generate PDF
+    loadPDFTemplate().then(template => {
+        // Convert logo to base64 for embedding
+        convertLogoToBase64().then(logoDataUrl => {
+            generatePDFWithTemplate(template, monthsToRender, timetable, logoDataUrl);
+        }).catch(error => {
+            console.error('Error loading logo:', error);
+            // Generate PDF without logo if there's an error
+            generatePDFWithTemplate(template, monthsToRender, timetable, null);
+        });
+    }).catch(error => {
+        console.error('Error loading PDF template:', error);
+        alert('Error loading PDF template. Please try again.');
+    });
+}
+
+function loadPDFTemplate() {
+    return fetch('pdf_template.html')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load PDF template');
+            }
+            return response.text();
+        });
+}
+
+function convertLogoToBase64() {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            try {
+                const dataURL = canvas.toDataURL('image/png');
+                resolve(dataURL);
+            } catch (e) {
+                reject(e);
+            }
+        };
+        img.onerror = reject;
+        img.src = 'logo.png';
+    });
+}
+
+function generatePDFWithTemplate(template, monthsToRender, timetable, logoDataUrl) {
+    // Replace placeholders in template
+    let htmlContent = template;
+    
+    // Replace logo placeholder
+    const logoHTML = logoDataUrl ? `<img src="${logoDataUrl}" alt="Plan Panther Logo" class="header-logo">` : '';
+    htmlContent = htmlContent.replace('{{LOGO_PLACEHOLDER}}', logoHTML);
+    
+    // Replace date placeholder
+    htmlContent = htmlContent.replace('{{DATE_PLACEHOLDER}}', new Date().toLocaleDateString());
+    
+    // Generate calendar content
+    let calendarContent = '';
+    monthsToRender.forEach((monthDate, index) => {
+        calendarContent += generateMonthHTML(monthDate, timetable);
+    });
+    htmlContent = htmlContent.replace('{{CALENDAR_CONTENT}}', calendarContent);
+    
+    // Replace legend and subjects content
+    htmlContent = htmlContent.replace('{{LEGEND_CONTENT}}', generateLegendHTML());
+    htmlContent = htmlContent.replace('{{SUBJECTS_CONTENT}}', generateSubjectsListHTML());
+    
+    // Create a new window for PDF content
+    const printWindow = window.open('', '_blank');
+    
+    // Write content to the new window
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
+    };
+}
+
+function generateMonthHTML(monthDate, timetable) {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+    
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0);
+    const startDay = startOfMonth.getDay();
+    const daysInMonth = endOfMonth.getDate();
+    
+    let html = `
+        <div class="month-container">
+            <div class="month-title">${monthNames[month]} ${year}</div>
+            <div class="calendar-grid">
+                <div class="day-header">Sun</div>
+                <div class="day-header">Mon</div>
+                <div class="day-header">Tue</div>
+                <div class="day-header">Wed</div>
+                <div class="day-header">Thu</div>
+                <div class="day-header">Fri</div>
+                <div class="day-header">Sat</div>
+    `;
+    
+    // Add overflow days from previous month
+    const prevMonth = new Date(year, month - 1, 1);
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    for (let i = startDay - 1; i >= 0; i--) {
+        const date = new Date(year, month - 1, daysInPrevMonth - i);
+        const dateString = date.toISOString().split('T')[0];
+        html += generateDayHTML(date.getDate(), dateString, timetable, true);
+    }
+    
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateString = date.toISOString().split('T')[0];
+        html += generateDayHTML(day, dateString, timetable, false);
+    }
+    
+    // Add overflow days from next month
+    const totalCells = startDay + daysInMonth;
+    const remainingCells = 7 - (totalCells % 7);
+    if (remainingCells < 7) {
+        for (let i = 1; i <= remainingCells; i++) {
+            const date = new Date(year, month + 1, i);
+            const dateString = date.toISOString().split('T')[0];
+            html += generateDayHTML(i, dateString, timetable, true);
+        }
+    }
+    
+    html += '</div></div>';
+    return html;
+}
+
+function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
+    const date = new Date(dateString);
+    const isSunday = date.getDay() === 0;
+    const isBusy = DaysWhenBusy.includes(dateString);
+    
+    let dayClass = 'calendar-day';
+    if (isOverflow) dayClass += ' overflow';
+    if (isSunday) dayClass += ' sunday';
+    if (isBusy) dayClass += ' busy';
+    
+    let html = `<div class="${dayClass}">`;
+    html += `<div class="day-number">${dayNumber}</div>`;
+    
+    // Add events for this day
+    if (timetable[dateString]) {
+        const eventData = timetable[dateString];
+        
+        if (Array.isArray(eventData)) {
+            eventData.forEach(eventText => {
+                html += generateEventHTML(eventText);
+            });
+        } else {
+            html += generateEventHTML(eventData);
+        }
+    }
+    
+    // Add busy indicator
+    if (isBusy) {
+        html += '<div class="busy-indicator">●</div>';
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function generateEventHTML(eventText) {
+    if (eventText.includes('Exam:') && eventText.includes('Study:')) {
+        // Combined event
+        const parts = eventText.split(', ');
+        let html = '';
+        parts.forEach(part => {
+            if (part.startsWith('Exam:')) {
+                html += `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
+            } else if (part.startsWith('Study:')) {
+                const subjectName = part.split(': ')[1].split(' (')[0];
+                const subject = subjects.find(s => s.name === subjectName);
+                const backgroundColor = subject ? subject.color : '#407CFF';
+                html += `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
+            }
+        });
+        return html;
+    } else if (eventText.startsWith('Exam:')) {
+        return `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
+    } else if (eventText.startsWith('Study:')) {
+        // Try to match subject color
+        const subjectName = eventText.split(': ')[1].split(' (')[0];
+        const subject = subjects.find(s => s.name === subjectName);
+        const backgroundColor = subject ? subject.color : '#407CFF';
+        return `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
+    }
+    return '';
+}
+
+function generateLegendHTML() {
+    return `
+        <div class="legend">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <span class="legend-color exam-event"></span>
+                Exam Days
+            </div>
+            <div class="legend-item">
+                <span class="legend-color study-event"></span>
+                Study Sessions
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: #fff3cd;"></span>
+                Busy Days
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: #fff5f5;"></span>
+                Sundays
+            </div>
+        </div>
+    `;
+}
+
+function generateSubjectsListHTML() {
+    let html = `
+        <div class="subjects-list">
+            <h3>Subjects</h3>
+    `;
+    
+    subjects.forEach((subject, index) => {
+        const difficultyText = ['Easy', 'Medium', 'Hard'][subject.difficulty] || 'Easy';
+        html += `
+            <div class="subject-item" style="border-left-color: ${subject.color};">
+                <strong>${index + 1}. ${subject.name}</strong><br>
+                Exam Date: ${subject.date} | Difficulty: ${difficultyText}
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
 }
 
 // Mark busy days functionality

@@ -24,7 +24,15 @@
             </div>
 
             <div class="button_holder1">
-                <button class="button export" onclick="exportToGoogleCalendar()">Export to Google Calendar</button>
+                <div class="export-dropdown">
+                    <div style="display: flex; justify-content: center;">
+                        <button class="button export" id="export-main-btn">Export</button>
+                    </div>
+                    <div class="export-options" id="export-options">
+                        <button class="export-option" onclick="exportToGoogleCalendar()">Export to Google Calendar</button>
+                        <button class="export-option" onclick="printAsPDF()">Print as PDF</button>
+                    </div>
+                </div>
             </div>
 
         </div>
