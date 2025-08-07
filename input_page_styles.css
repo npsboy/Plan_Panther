@@ -274,3 +274,7 @@ input.yellow_thumb::-webkit-slider-thumb {
     background-color: #ffe6e6; /* Light red background for Sundays */
     border-color: #ffcccc; /* Slightly darker border for Sundays */
 }
+#subjects_list {
+    overflow: auto;
+    max-height: 500px; /* Set a maximum height for the list */
+}

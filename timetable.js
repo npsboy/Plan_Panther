@@ -805,13 +805,13 @@ function display_subjects() {
     let subject_list_display = document.getElementById("subjects_list");
     if (!subject_list_display) return;
     
-    // Clear existing subjects display
-    subject_list_display.innerHTML = "";
     
     if (subjects.length === 0) {
-        subject_list_display.innerHTML = "<br><br><p style='text-align: center; font-size: 20px;'>Your subjects will be displayed here as you add them</p>";
         return;
     }
+
+    // Clear existing subjects display
+    subject_list_display.innerHTML = "";
     
     subjects.forEach((subject, index) => {
         let subject_item = document.createElement("div");
