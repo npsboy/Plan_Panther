@@ -744,6 +744,17 @@ function add_subject(event) {
         return;
     }
     
+    // Check for duplicate exam dates
+    const duplicateDate = subjects.find(subject => 
+        subject.date === subject_date && 
+        (adding_new_subject || subjects.indexOf(subject) !== edit_subject_no)
+    );
+    if (duplicateDate) {
+        alert("Another exam is already scheduled for this date!");
+        add_subject.isProcessing = false; // Reset flag
+        return;
+    }
+    
     // Check if exam date is at least 2 days from today
     const examDate = new Date(subject_date);
     const minDate = new Date(today);
