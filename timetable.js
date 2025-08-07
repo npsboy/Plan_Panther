@@ -263,6 +263,19 @@ function generate_timetable() {
         return {};
     }
 
+    // Validate that the exam period doesn't exceed 45 days
+    if (subjects.length > 1) {
+        const examDates = subjects.map(s => new Date(s.date));
+        const earliestExamDate = new Date(Math.min(...examDates));
+        const latestExamDate = new Date(Math.max(...examDates));
+        const daysDifference = Math.ceil((latestExamDate - earliestExamDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysDifference > 45) {
+            alert(`Oops! Timetables can’t span more than 45 days.`);
+            return {};
+        }
+    }
+
     // Step 1: List All Study Days
     const today = new Date();
     today.setHours(0, 0, 0, 0);
