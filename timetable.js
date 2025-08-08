@@ -1545,7 +1545,7 @@ function generateSubjectsListHTML() {
 // Mark busy days functionality
 function toggle_mark_busy_mode() {
     markBusyMode = !markBusyMode;
-    const button = document.getElementById('mark_busy_button');
+    const button = document.getElementById('mark_busy_button_bar');
     
     if (markBusyMode) {
         button.textContent = 'Click days to mark as busy (Click here to exit)';

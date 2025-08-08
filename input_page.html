@@ -23,20 +23,9 @@
                 <button class="button submit">Make Study Plan</button>
             </div>
 
-            <div class="button_holder1">
-                <div class="export-dropdown">
-                    <div style="display: flex; justify-content: center;">
-                        <button class="button export" id="export-main-btn">Export</button>
-                    </div>
-                    <div class="export-options" id="export-options">
-                        <button class="export-option" onclick="exportToGoogleCalendar()">Export to Google Calendar</button>
-                        <button class="export-option" onclick="printAsPDF()">Print as PDF</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="button_holder1">
-                <button class="button" id="clear-all-btn" style="background-color: #dc3545; width: 150px;" onclick="clearAllData()">Clear All Data</button>
+            <div class="button_holder1" onclick="clearAllData()" style="cursor: pointer;">
+                <a>Start Afresh</a>
+                <img src="delete.png" alt="delete">
             </div>
 
         </div>
@@ -57,6 +46,19 @@
                 <div>Sat</div>
             </div>
             <div id="calendar"></div>
+            
+            <!-- Bottom action bar -->
+            <div id="calendar_bottom_bar">
+                <button id="mark_busy_button_bar" onclick="toggle_mark_busy_mode()">Mark days when you are not free</button>
+                
+                <div class="export-dropdown">
+                    <button class="button export" id="export-main-btn">Export</button>
+                    <div class="export-options" id="export-options">
+                        <button class="export-option" onclick="exportToGoogleCalendar()">Export to Google Calendar</button>
+                        <button class="export-option" onclick="printAsPDF()">Print as PDF</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -85,9 +87,6 @@
 
         </div>
     </div>
-
-    <!-- Mark Busy Days Button -->
-    <button id="mark_busy_button" onclick="toggle_mark_busy_mode()">Mark days when you are not free</button>
 
     <script src="timetable.js"></script>
 </body>
