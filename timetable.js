@@ -1256,7 +1256,7 @@ function generateMonthHTML(monthDate, timetable) {
     
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0);
-    const startDay = startOfMonth.getDay();
+    const startDay = startOfMonth.getUTCDay();
     const daysInMonth = endOfMonth.getDate();
     
     let html = `
@@ -1305,7 +1305,7 @@ function generateMonthHTML(monthDate, timetable) {
 
 function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
     const date = new Date(dateString);
-    const isSunday = date.getDay() === 0;
+    const isSunday = date.getUTCDay() === 0;
     const isBusy = DaysWhenBusy.includes(dateString);
     
     let dayClass = 'calendar-day';
