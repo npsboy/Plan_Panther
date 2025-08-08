@@ -397,3 +397,9 @@ input.yellow_thumb::-webkit-slider-thumb {
     justify-content: center;
     font-weight: bold;
 }
+
+/* Clear All Data button styling */
+#clear-all-btn:hover {
+    background-color: #c82333 !important;
+    cursor: pointer;
+}

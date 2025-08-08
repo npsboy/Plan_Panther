@@ -9,6 +9,87 @@ let currentTimetable = null; // Store the generated timetable
 let DaysWhenBusy = []; // Array to store busy days
 let markBusyMode = false; // Flag for mark busy mode
 
+// localStorage utility functions
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('planPanther_subjects', JSON.stringify(subjects));
+        localStorage.setItem('planPanther_busyDays', JSON.stringify(DaysWhenBusy));
+        if (currentTimetable) {
+            localStorage.setItem('planPanther_timetable', JSON.stringify(currentTimetable));
+        }
+        console.log('Data saved to localStorage');
+    } catch (error) {
+        console.error('Error saving to localStorage:', error);
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        // Load subjects
+        const savedSubjects = localStorage.getItem('planPanther_subjects');
+        if (savedSubjects) {
+            subjects = JSON.parse(savedSubjects);
+            console.log('Loaded subjects from localStorage:', subjects);
+        }
+        
+        // Load busy days
+        const savedBusyDays = localStorage.getItem('planPanther_busyDays');
+        if (savedBusyDays) {
+            DaysWhenBusy = JSON.parse(savedBusyDays);
+            console.log('Loaded busy days from localStorage:', DaysWhenBusy);
+        }
+        
+        // Load timetable
+        const savedTimetable = localStorage.getItem('planPanther_timetable');
+        if (savedTimetable) {
+            currentTimetable = JSON.parse(savedTimetable);
+            console.log('Loaded timetable from localStorage');
+        }
+    } catch (error) {
+        console.error('Error loading from localStorage:', error);
+        // Reset to defaults if there's an error
+        subjects = [];
+        DaysWhenBusy = [];
+        currentTimetable = null;
+    }
+}
+
+function clearLocalStorage() {
+    try {
+        localStorage.removeItem('planPanther_subjects');
+        localStorage.removeItem('planPanther_busyDays');
+        localStorage.removeItem('planPanther_timetable');
+        console.log('localStorage cleared');
+    } catch (error) {
+        console.error('Error clearing localStorage:', error);
+    }
+}
+
+function clearAllData() {
+    if (confirm('Are you sure you want to clear all data? This will remove all subjects, busy days, and the generated timetable. This action cannot be undone.')) {
+        // Clear in-memory data
+        subjects = [];
+        DaysWhenBusy = [];
+        currentTimetable = null;
+        
+        // Clear localStorage
+        clearLocalStorage();
+        
+        // Ask if user wants to go back to landing page
+        const goToLanding = confirm('Data cleared successfully! Would you like to go back to the welcome screen?');
+        
+        if (goToLanding) {
+            // Go back to landing page
+            main();
+        } else {
+            // Update the UI to show empty state
+            display_subjects();
+            generate_calendar(); // Regenerate empty calendar
+            alert('All data has been cleared successfully.');
+        }
+    }
+}
+
 async function load_page (page){
     response = await fetch(page);
     response_text = await response.text();
@@ -42,10 +123,20 @@ function change_slider_color() {
 }
 
 async function main() {
-    await load_page("landing_page.html");
+    // Check if localStorage has existing data
+    const hasExistingData = localStorage.getItem('planPanther_subjects') && 
+                           JSON.parse(localStorage.getItem('planPanther_subjects')).length > 0;
     
-    // Set up event listener for the Get Started button
-    setupLandingPageListeners();
+    if (hasExistingData) {
+        // Skip landing page and go directly to input page
+        console.log('Existing data found, skipping landing page');
+        await load_page("input_page.html");
+        setupInputPageListeners();
+    } else {
+        // Show landing page for new users
+        await load_page("landing_page.html");
+        setupLandingPageListeners();
+    }
 }
 
 function setupLandingPageListeners() {
@@ -57,8 +148,6 @@ function setupLandingPageListeners() {
             console.log('Input page loaded');
             // Set up event listeners for the input page
             setupInputPageListeners();
-            // Initialize the calendar structure without timetable
-            generate_calendar();
         });
     } else {
         console.log('Get Started button not found');
@@ -68,8 +157,24 @@ function setupLandingPageListeners() {
 function setupInputPageListeners() {
     console.log('Setting up input page listeners');
     
+    // Load data from localStorage
+    loadFromLocalStorage();
+    
     // Initialize the subjects display
     display_subjects();
+    
+    // If we have a saved timetable and subjects, apply it to the calendar
+    if (currentTimetable && subjects.length > 0) {
+        generate_calendar(); // Generate calendar structure
+        update_calendar(currentTimetable); // Apply the saved timetable
+    } else if (subjects.length > 0) {
+        // If we have subjects but no saved timetable, automatically generate one
+        console.log('Subjects found but no timetable, generating automatically...');
+        generate_calendar(); // Generate calendar structure
+        update_calendar(); // This will generate a new timetable and apply it
+    } else {
+        generate_calendar(); // Just generate the calendar structure
+    }
     
     // Set up slider event listener
     const slider = document.getElementById("subject_difficulty");
@@ -661,7 +766,14 @@ function update_calendar(timetable) {
         console.log('No timetable provided, generating...'); // Debug
         timetable = generate_timetable();
         currentTimetable = timetable; // Store the generated timetable
+        // Save the generated timetable to localStorage
+        saveToLocalStorage();
         console.log('Generated timetable:', timetable); // Debug
+    } else {
+        // If timetable is provided, store it as current timetable
+        currentTimetable = timetable;
+        // Save to localStorage
+        saveToLocalStorage();
     }
     
     if (Object.keys(timetable).length === 0) {
@@ -860,6 +972,9 @@ function add_subject(event) {
         } else {
             subjects[edit_subject_no] = { ...subject_append };
         }
+
+        // Save to localStorage after adding/editing subject
+        saveToLocalStorage();
 
         background_darkener.style.display = "none";
         display_subjects();
@@ -1466,6 +1581,9 @@ function toggleBusyDay(dayElement) {
         dayElement.classList.remove('busy');
         console.log(`Removed ${date} from busy days`);
     }
+    
+    // Save busy days to localStorage
+    saveToLocalStorage();
     
     console.log('All busy days:', DaysWhenBusy); // Debug log
 }
