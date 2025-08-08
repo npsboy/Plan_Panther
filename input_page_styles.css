@@ -384,3 +384,16 @@ input.yellow_thumb::-webkit-slider-thumb {
 .export-option:hover {
     background-color: #F0F4FA;
 }
+
+/* Today's date styling */
+.calendar-day.today span {
+    color: #407CFF;
+    border: 2px solid #407CFF;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}

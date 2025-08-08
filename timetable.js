@@ -222,6 +222,8 @@ function generate_calendar() {
     // Calculate overflow dates from the previous month
     const prevMonth = new Date(Date.UTC(year, month - 1, 1));
     const daysInPrevMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const todayString = today.toISOString().split("T")[0]; // Get today's date string for comparison
+    
     for (let i = startDay - 1; i >= 0; i--) {
         const date = new Date(Date.UTC(prevMonth.getUTCFullYear(), prevMonth.getUTCMonth(), daysInPrevMonth - i));
         const dayElement = document.createElement("div");
@@ -232,6 +234,11 @@ function generate_calendar() {
         }
         dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
         dayElement.dataset.date = date.toISOString().split("T")[0];
+        
+        // Check if this is today's date
+        if (dayElement.dataset.date === todayString) {
+            dayElement.classList.add("today");
+        }
         
         // Check if this day is marked as busy
         if (DaysWhenBusy.includes(dayElement.dataset.date)) {
@@ -259,6 +266,11 @@ function generate_calendar() {
         }
         dayElement.innerHTML = `<span>${day}</span>`;
         dayElement.dataset.date = date.toISOString().split("T")[0];
+        
+        // Check if this is today's date
+        if (dayElement.dataset.date === todayString) {
+            dayElement.classList.add("today");
+        }
         
         // Check if this day is marked as busy
         if (DaysWhenBusy.includes(dayElement.dataset.date)) {
@@ -290,6 +302,11 @@ function generate_calendar() {
             }
             dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
             dayElement.dataset.date = date.toISOString().split("T")[0];
+            
+            // Check if this is today's date
+            if (dayElement.dataset.date === todayString) {
+                dayElement.classList.add("today");
+            }
             
             // Check if this day is marked as busy
             if (DaysWhenBusy.includes(dayElement.dataset.date)) {
