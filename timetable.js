@@ -1088,28 +1088,93 @@ function edit_subject (subject_no){
 }
 
 function getRandomLowSaturationColor() {
-    // Define the base color in RGB
-    let baseColor = [0x6c, 0xcc, 0x86]; // Equivalent to #6ccc86
-
-    // Define a range for variation (e.g., +/- 20)
+    // Helper function to calculate color distance
+    function colorDistance(color1, color2) {
+        const r1 = parseInt(color1.substring(1, 3), 16);
+        const g1 = parseInt(color1.substring(3, 5), 16);
+        const b1 = parseInt(color1.substring(5, 7), 16);
+        
+        const r2 = parseInt(color2.substring(1, 3), 16);
+        const g2 = parseInt(color2.substring(3, 5), 16);
+        const b2 = parseInt(color2.substring(5, 7), 16);
+        
+        // Euclidean distance in RGB space
+        return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
+    }
+    
+    // Get existing colors from current subjects
+    const existingColors = subjects.map(subject => subject.color).filter(color => color);
+    
+    // Minimum distance required between colors (higher = more different colors)
+    const minDistance = 80;
+    
+    // Maximum attempts to find a unique color
+    const maxAttempts = 50;
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // Define multiple base colors for variety
+        const baseColors = [
+            [0x6c, 0xcc, 0x86], // Green
+            [0x86, 0xcc, 0x6c], // Light green
+            [0xcc, 0x86, 0x6c], // Orange-brown
+            [0x6c, 0x86, 0xcc], // Blue
+            [0xcc, 0x6c, 0x86], // Pink
+            [0x86, 0x6c, 0xcc], // Purple
+            [0xcc, 0xcc, 0x6c], // Yellow-green
+            [0x6c, 0xcc, 0xcc], // Cyan
+        ];
+        
+        // Choose a random base color
+        const baseColor = baseColors[Math.floor(Math.random() * baseColors.length)];
+        
+        // Define a range for variation
+        let variation = 50;
+        
+        // Generate random values within the variation range
+        let red = baseColor[0] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
+        let green = baseColor[1] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
+        let blue = baseColor[2] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
+        
+        // Ensure values are within valid RGB range (0-255)
+        red = Math.max(0, Math.min(255, red));
+        green = Math.max(0, Math.min(255, green));
+        blue = Math.max(0, Math.min(255, blue));
+        
+        // Construct the color string in hexadecimal format
+        let color = '#' + red.toString(16).padStart(2, '0') +
+                            green.toString(16).padStart(2, '0') +
+                            blue.toString(16).padStart(2, '0');
+        
+        // Check if this color is sufficiently different from existing colors
+        let isUnique = true;
+        for (const existingColor of existingColors) {
+            if (colorDistance(color, existingColor) < minDistance) {
+                isUnique = false;
+                break;
+            }
+        }
+        
+        if (isUnique) {
+            return color;
+        }
+    }
+    
+    // Fallback: if we can't find a unique color after maxAttempts, return a random color anyway
+    console.warn('Could not generate sufficiently unique color, using fallback');
+    const baseColor = [0x6c, 0xcc, 0x86];
     let variation = 70;
-
-    // Generate random values within the variation range
+    
     let red = baseColor[0] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
     let green = baseColor[1] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
     let blue = baseColor[2] + Math.floor(Math.random() * (variation * 2 + 1)) - variation;
-
-    // Ensure values are within valid RGB range (0-255)
+    
     red = Math.max(0, Math.min(255, red));
     green = Math.max(0, Math.min(255, green));
     blue = Math.max(0, Math.min(255, blue));
-
-    // Construct the color string in hexadecimal format
-    let color = '#' + red.toString(16).padStart(2, '0') +
-                        green.toString(16).padStart(2, '0') +
-                        blue.toString(16).padStart(2, '0');
-
-    return color;
+    
+    return '#' + red.toString(16).padStart(2, '0') +
+                 green.toString(16).padStart(2, '0') +
+                 blue.toString(16).padStart(2, '0');
 }
 
 function exportToGoogleCalendar() {
