@@ -1529,7 +1529,14 @@ function generateSubjectsListHTML() {
     `;
     
     subjects.forEach((subject, index) => {
-        const difficultyText = ['Easy', 'Medium', 'Hard'][subject.difficulty] || 'Easy';
+        // Convert stored difficulty (1-3) to correct text
+        let difficultyText = 'Easy'; // Default
+        if (subject.difficulty === 2) {
+            difficultyText = 'Medium';
+        } else if (subject.difficulty === 3) {
+            difficultyText = 'Hard';
+        }
+        
         html += `
             <div class="subject-item" style="border-left-color: ${subject.color};">
                 <strong>${index + 1}. ${subject.name}</strong><br>
