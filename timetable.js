@@ -1015,7 +1015,7 @@ function display_subjects() {
             align-items: center;
             border-bottom: 1px solid #ddd;
         `;
-        
+
         // Determine difficulty color
         let difficultyColor = '#00B050'; // Green for Easy (stored as 1)
         let difficultyText = 'Easy';
@@ -1026,14 +1026,15 @@ function display_subjects() {
             difficultyColor = '#FF0000'; // Red for Hard (stored as 3)
             difficultyText = 'Hard';
         }
-        
+
         let subject_info = document.createElement("div");
         subject_info.innerHTML = `
             <span style="font-weight: bold;">${index + 1}. ${subject.name}</span> | 
             <span>${subject.date}</span> | 
             <span style="color: ${difficultyColor}; font-weight: bold;">${difficultyText}</span>
         `;
-        
+
+        // Edit button
         let edit_button = document.createElement("img");
         edit_button.src = "edit_icon.png";
         edit_button.style.cssText = `
@@ -1045,9 +1046,39 @@ function display_subjects() {
         `;
         edit_button.title = "Edit subject";
         edit_button.onclick = () => edit_subject(index);
-        
+
+        // Delete button
+        let delete_button = document.createElement("img");
+        delete_button.src = "delete.png";
+        delete_button.style.cssText = `
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 3px;
+            margin-left: 6px;
+        `;
+        delete_button.title = "Delete subject";
+        delete_button.onclick = () => {
+            if (confirm(`Delete subject '${subject.name}'?`)) {
+                subjects.splice(index, 1);
+                saveToLocalStorage();
+                display_subjects();
+                // Optionally, update the calendar if timetable exists
+                if (typeof update_calendar === 'function') {
+                    update_calendar(currentTimetable);
+                }
+            }
+        };
+
+        // Button container
+        let button_container = document.createElement("div");
+        button_container.style.display = "flex";
+        button_container.appendChild(edit_button);
+        button_container.appendChild(delete_button);
+
         subject_item.appendChild(subject_info);
-        subject_item.appendChild(edit_button);
+        subject_item.appendChild(button_container);
         subject_list_display.appendChild(subject_item);
     });
 }
