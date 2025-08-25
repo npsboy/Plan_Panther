@@ -321,7 +321,7 @@ function generate_calendar() {
 
     const startOfMonth = new Date(Date.UTC(year, month, 1));
     const endOfMonth = new Date(Date.UTC(year, month + 1, 0));
-    const startDay = startOfMonth.getUTCDay(); // Day of the week the month starts on
+    const startDay = startOfMonth.getDay(); // Day of the week the month starts on
     const daysInMonth = endOfMonth.getUTCDate();
 
     // Calculate overflow dates from the previous month
@@ -334,7 +334,7 @@ function generate_calendar() {
         const dayElement = document.createElement("div");
         dayElement.classList.add("calendar-day", "overflow-day");
         // Check if it's Sunday (day 0)
-        if (date.getUTCDay() === 0) {
+        if (date.getDay() === 0) {
             dayElement.classList.add("sunday");
         }
         dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
@@ -366,7 +366,7 @@ function generate_calendar() {
         const dayElement = document.createElement("div");
         dayElement.classList.add("calendar-day");
         // Check if it's Sunday (day 0)
-        if (date.getUTCDay() === 0) {
+        if (date.getDay() === 0) {
             dayElement.classList.add("sunday");
         }
         dayElement.innerHTML = `<span>${day}</span>`;
@@ -402,7 +402,7 @@ function generate_calendar() {
             const dayElement = document.createElement("div");
             dayElement.classList.add("calendar-day", "overflow-day");
             // Check if it's Sunday (day 0)
-            if (date.getUTCDay() === 0) {
+            if (date.getDay() === 0) {
                 dayElement.classList.add("sunday");
             }
             dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
@@ -1671,7 +1671,7 @@ function generateMonthHTML(monthDate, timetable) {
     
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0);
-    const startDay = startOfMonth.getUTCDay();
+    const startDay = startOfMonth.getDay();
     const daysInMonth = endOfMonth.getDate();
     
     let html = `
@@ -1692,14 +1692,14 @@ function generateMonthHTML(monthDate, timetable) {
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     for (let i = startDay - 1; i >= 0; i--) {
         const date = new Date(year, month - 1, daysInPrevMonth - i);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         html += generateDayHTML(date.getDate(), dateString, timetable, true);
     }
     
     // Add days of current month
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         html += generateDayHTML(day, dateString, timetable, false);
     }
     
@@ -1709,7 +1709,7 @@ function generateMonthHTML(monthDate, timetable) {
     if (remainingCells < 7) {
         for (let i = 1; i <= remainingCells; i++) {
             const date = new Date(year, month + 1, i);
-            const dateString = date.toISOString().split('T')[0];
+            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             html += generateDayHTML(i, dateString, timetable, true);
         }
     }
@@ -1720,7 +1720,7 @@ function generateMonthHTML(monthDate, timetable) {
 
 function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
     const date = new Date(dateString);
-    const isSunday = date.getUTCDay() === 0;
+    const isSunday = date.getDay() === 0;
     const isBusy = DaysWhenBusy.includes(dateString);
     
     let dayClass = 'calendar-day';
