@@ -1388,6 +1388,15 @@ function getRandomLowSaturationColor() {
         return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
     }
     
+    // Helper function to check if color is too red
+    function isRedShade(r, g, b) {
+        // A color is considered red if:
+        // 1. Red channel is dominant (significantly higher than green and blue)
+        // 2. Red channel is above a certain threshold
+        const avgOthers = (g + b) / 2;
+        return r > 100 && r > avgOthers + 30;
+    }
+    
     // Get existing colors from current subjects
     const existingColors = subjects.map(subject => subject.color).filter(color => color);
     
@@ -1398,13 +1407,13 @@ function getRandomLowSaturationColor() {
     const maxAttempts = 50;
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        // Define multiple base colors for variety
+        // Define multiple base colors for variety (excluding red shades)
         const baseColors = [
             [0x6c, 0xcc, 0x86], // Green
             [0x86, 0xcc, 0x6c], // Light green
-            [0xcc, 0x86, 0x6c], // Orange-brown
+            [0xcc, 0xa0, 0x6c], // Orange (more orange than red)
             [0x6c, 0x86, 0xcc], // Blue
-            [0xcc, 0x6c, 0x86], // Pink
+            [0xcc, 0x6c, 0xcc], // Magenta/Purple
             [0x86, 0x6c, 0xcc], // Purple
             [0xcc, 0xcc, 0x6c], // Yellow-green
             [0x6c, 0xcc, 0xcc], // Cyan
@@ -1425,6 +1434,11 @@ function getRandomLowSaturationColor() {
         red = Math.max(0, Math.min(255, red));
         green = Math.max(0, Math.min(255, green));
         blue = Math.max(0, Math.min(255, blue));
+        
+        // Skip if the color is a red shade
+        if (isRedShade(red, green, blue)) {
+            continue;
+        }
         
         // Construct the color string in hexadecimal format
         let color = '#' + red.toString(16).padStart(2, '0') +
