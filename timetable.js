@@ -323,7 +323,7 @@ function generate_calendar() {
 
     const startOfMonth = new Date(Date.UTC(year, month, 1));
     const endOfMonth = new Date(Date.UTC(year, month + 1, 0));
-    const startDay = startOfMonth.getUTCDay(); // Day of the week the month starts on
+    const startDay = startOfMonth.getDay(); // Day of the week the month starts on
     const daysInMonth = endOfMonth.getUTCDate();
 
     // Calculate overflow dates from the previous month
@@ -336,7 +336,7 @@ function generate_calendar() {
         const dayElement = document.createElement("div");
         dayElement.classList.add("calendar-day", "overflow-day");
         // Check if it's Sunday (day 0)
-        if (date.getUTCDay() === 0) {
+        if (date.getDay() === 0) {
             dayElement.classList.add("sunday");
         }
         dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
@@ -368,7 +368,7 @@ function generate_calendar() {
         const dayElement = document.createElement("div");
         dayElement.classList.add("calendar-day");
         // Check if it's Sunday (day 0)
-        if (date.getUTCDay() === 0) {
+        if (date.getDay() === 0) {
             dayElement.classList.add("sunday");
         }
         dayElement.innerHTML = `<span>${day}</span>`;
@@ -404,7 +404,7 @@ function generate_calendar() {
             const dayElement = document.createElement("div");
             dayElement.classList.add("calendar-day", "overflow-day");
             // Check if it's Sunday (day 0)
-            if (date.getUTCDay() === 0) {
+            if (date.getDay() === 0) {
                 dayElement.classList.add("sunday");
             }
             dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
@@ -733,6 +733,9 @@ function generate_timetable() {
         }
     });
     
+    // Shuffle study days to prevent more than 2 continuous days of the same subject
+    shuffleToPreventContinuousStudy(timetable);
+    
     // Add exam days to the timetable, but check if they already have study sessions
     subjects.forEach(subject => {
         const existingEvent = timetable[subject.date];
@@ -750,6 +753,190 @@ function generate_timetable() {
     console.log('Number of entries in timetable:', Object.keys(timetable).length); // Debug
     
     return timetable;
+}
+
+function shuffleToPreventContinuousStudy(timetable) {
+    // Get all study sessions sorted by date
+    const studySessions = [];
+    
+    Object.entries(timetable).forEach(([date, events]) => {
+        if (Array.isArray(events)) {
+            // Handle Sunday sessions with multiple slots
+            events.forEach(event => {
+                if (event.startsWith('Study:')) {
+                    const subjectName = event.split(': ')[1].split(' (')[0];
+                    studySessions.push({ date, subject: subjectName, event, isArray: true });
+                }
+            });
+        } else if (typeof events === 'string' && events.startsWith('Study:')) {
+            const subjectName = events.split(': ')[1];
+            studySessions.push({ date, subject: subjectName, event: events, isArray: false });
+        }
+    });
+    
+    // Sort by date
+    studySessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Find continuous study sessions (more than 2 consecutive days)
+    const maxContinuousDays = 2;
+    
+    for (let i = 0; i < studySessions.length; i++) {
+        const currentSession = studySessions[i];
+        let continuousCount = 1;
+        let continuousGroup = [currentSession];
+        
+        // Count continuous days for the same subject
+        for (let j = i + 1; j < studySessions.length; j++) {
+            const nextSession = studySessions[j];
+            const currentDate = new Date(currentSession.date);
+            const nextDate = new Date(nextSession.date);
+            
+            // Check if it's the next day and same subject
+            const dayDifference = Math.abs((nextDate - currentDate) / (1000 * 60 * 60 * 24));
+            
+            if (dayDifference <= continuousCount && nextSession.subject === currentSession.subject) {
+                continuousCount++;
+                continuousGroup.push(nextSession);
+            } else {
+                break;
+            }
+        }
+        
+        // If we found more than 2 continuous days, try to shuffle
+        if (continuousCount > maxContinuousDays) {
+            console.log(`Found ${continuousCount} continuous days for ${currentSession.subject}, attempting to shuffle`);
+            
+            // Try to find a suitable swap for the 3rd day onwards
+            for (let k = maxContinuousDays; k < continuousGroup.length; k++) {
+                const sessionToMove = continuousGroup[k];
+                
+                // Find a suitable swap candidate
+                const swapCandidate = findSuitableSwap(sessionToMove, studySessions, timetable);
+                
+                if (swapCandidate) {
+                    // Perform the swap
+                    performSwap(sessionToMove, swapCandidate, timetable);
+                    console.log(`Swapped ${sessionToMove.subject} on ${sessionToMove.date} with ${swapCandidate.subject} on ${swapCandidate.date}`);
+                    
+                    // Update the studySessions array to reflect the swap
+                    const sessionIndex = studySessions.findIndex(s => s.date === sessionToMove.date && s.subject === sessionToMove.subject);
+                    const candidateIndex = studySessions.findIndex(s => s.date === swapCandidate.date && s.subject === swapCandidate.subject);
+                    
+                    if (sessionIndex !== -1 && candidateIndex !== -1) {
+                        // Swap the subjects in the studySessions array
+                        const tempSubject = studySessions[sessionIndex].subject;
+                        studySessions[sessionIndex].subject = studySessions[candidateIndex].subject;
+                        studySessions[candidateIndex].subject = tempSubject;
+                    }
+                }
+            }
+        }
+        
+        // Skip ahead past this continuous group
+        i += continuousCount - 1;
+    }
+}
+
+function findSuitableSwap(sessionToMove, allSessions, timetable) {
+    // Find sessions that are not adjacent to sessionToMove and are different subjects
+    const moveDate = new Date(sessionToMove.date);
+    
+    for (const candidate of allSessions) {
+        if (candidate.subject === sessionToMove.subject) continue;
+        
+        const candidateDate = new Date(candidate.date);
+        const dayDifference = Math.abs((candidateDate - moveDate) / (1000 * 60 * 60 * 24));
+        
+        // Don't swap with adjacent days or the same day
+        if (dayDifference < 2) continue;
+        
+        // Check if swapping would create new continuous issues
+        if (wouldCreateContinuousIssue(sessionToMove, candidate, allSessions)) continue;
+        
+        // Check if both subjects can study on each other's dates (exam constraints)
+        if (canSubjectStudyOnDate(sessionToMove.subject, candidate.date) && 
+            canSubjectStudyOnDate(candidate.subject, sessionToMove.date)) {
+            return candidate;
+        }
+    }
+    
+    return null;
+}
+
+function wouldCreateContinuousIssue(session1, session2, allSessions) {
+    // Check if swapping would create new continuous study issues
+    // This is a simplified check - you could make it more sophisticated
+    
+    const date1 = new Date(session1.date);
+    const date2 = new Date(session2.date);
+    
+    // Check if session1's subject would become continuous at session2's date
+    const adjacentToSession2 = allSessions.filter(s => {
+        if (s.subject !== session1.subject) return false;
+        const sDate = new Date(s.date);
+        const dayDiff = Math.abs((sDate - date2) / (1000 * 60 * 60 * 24));
+        return dayDiff === 1;
+    });
+    
+    // Check if session2's subject would become continuous at session1's date
+    const adjacentToSession1 = allSessions.filter(s => {
+        if (s.subject !== session2.subject) return false;
+        const sDate = new Date(s.date);
+        const dayDiff = Math.abs((sDate - date1) / (1000 * 60 * 60 * 24));
+        return dayDiff === 1;
+    });
+    
+    // If either would create 2+ adjacent sessions, it might be risky
+    return adjacentToSession2.length >= 2 || adjacentToSession1.length >= 2;
+}
+
+function canSubjectStudyOnDate(subjectName, dateString) {
+    // Check if the subject can study on the given date
+    const subject = subjects.find(s => s.name === subjectName);
+    if (!subject) return false;
+    
+    const studyDate = new Date(dateString);
+    const examDate = new Date(subject.date);
+    
+    // Can't study on or after exam date
+    if (studyDate >= examDate) return false;
+    
+    // Can't study on busy days
+    if (DaysWhenBusy.includes(dateString)) return false;
+    
+    return true;
+}
+
+function performSwap(session1, session2, timetable) {
+    // Get the current events for both dates
+    const events1 = timetable[session1.date];
+    const events2 = timetable[session2.date];
+    
+    if (session1.isArray && Array.isArray(events1)) {
+        // Handle Sunday sessions with arrays
+        const index1 = events1.findIndex(event => event === session1.event);
+        if (index1 !== -1) {
+            // Replace the subject name in the event
+            const newEvent1 = session1.event.replace(session1.subject, session2.subject);
+            events1[index1] = newEvent1;
+        }
+    } else if (typeof events1 === 'string') {
+        // Handle regular day sessions
+        timetable[session1.date] = events1.replace(session1.subject, session2.subject);
+    }
+    
+    if (session2.isArray && Array.isArray(events2)) {
+        // Handle Sunday sessions with arrays
+        const index2 = events2.findIndex(event => event === session2.event);
+        if (index2 !== -1) {
+            // Replace the subject name in the event
+            const newEvent2 = session2.event.replace(session2.subject, session1.subject);
+            events2[index2] = newEvent2;
+        }
+    } else if (typeof events2 === 'string') {
+        // Handle regular day sessions
+        timetable[session2.date] = events2.replace(session2.subject, session1.subject);
+    }
 }
 
 function update_calendar(timetable) {
@@ -1489,7 +1676,7 @@ function generateMonthHTML(monthDate, timetable) {
     
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0);
-    const startDay = startOfMonth.getUTCDay();
+    const startDay = startOfMonth.getDay();
     const daysInMonth = endOfMonth.getDate();
     
     let html = `
@@ -1510,14 +1697,14 @@ function generateMonthHTML(monthDate, timetable) {
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     for (let i = startDay - 1; i >= 0; i--) {
         const date = new Date(year, month - 1, daysInPrevMonth - i);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         html += generateDayHTML(date.getDate(), dateString, timetable, true);
     }
     
     // Add days of current month
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         html += generateDayHTML(day, dateString, timetable, false);
     }
     
@@ -1527,7 +1714,7 @@ function generateMonthHTML(monthDate, timetable) {
     if (remainingCells < 7) {
         for (let i = 1; i <= remainingCells; i++) {
             const date = new Date(year, month + 1, i);
-            const dateString = date.toISOString().split('T')[0];
+            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             html += generateDayHTML(i, dateString, timetable, true);
         }
     }
@@ -1538,7 +1725,7 @@ function generateMonthHTML(monthDate, timetable) {
 
 function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
     const date = new Date(dateString);
-    const isSunday = date.getUTCDay() === 0;
+    const isSunday = date.getDay() === 0;
     const isBusy = DaysWhenBusy.includes(dateString);
     
     let dayClass = 'calendar-day';
