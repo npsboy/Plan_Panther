@@ -499,9 +499,11 @@ function generate_timetable() {
             reservedDays.add(reservedDayString);
             subjectReservedDays[subject.name] = reservedDayString;
             
-            // If reserved day is Sunday, we'll handle reservation during assignment
-            // Don't automatically reserve both slots - let the algorithm distribute them
-            if (reservedDay.getUTCDay() !== 0) {
+            // If reserved day is Sunday, reserve its morning and afternoon slots
+            if (reservedDay.getUTCDay() === 0) {
+                reservedTimeSlots.add(reservedDayString + '_morning');
+                reservedTimeSlots.add(reservedDayString + '_afternoon');
+            } else {
                 reservedTimeSlots.add(reservedDayString);
             }
         }
@@ -618,6 +620,7 @@ function generate_timetable() {
             }
         } else {
             timetable[day] = `Study: ${subjectName}`;
+            usedTimeSlots.add(day);
         }
     });
     
@@ -734,7 +737,7 @@ function generate_timetable() {
     });
     
     // Shuffle study days to prevent more than 2 continuous days of the same subject
-    shuffleToPreventContinuousStudy(timetable);
+    shuffleToPreventContinuousStudy(timetable, subjectReservedDays);
     
     // Add exam days to the timetable, but check if they already have study sessions
     subjects.forEach(subject => {
@@ -755,9 +758,10 @@ function generate_timetable() {
     return timetable;
 }
 
-function shuffleToPreventContinuousStudy(timetable) {
+function shuffleToPreventContinuousStudy(timetable, subjectReservedDays = {}) {
     // Get all study sessions sorted by date
     const studySessions = [];
+    const reservedDaysSet = new Set(Object.values(subjectReservedDays));
     
     Object.entries(timetable).forEach(([date, events]) => {
         if (Array.isArray(events)) {
@@ -765,12 +769,12 @@ function shuffleToPreventContinuousStudy(timetable) {
             events.forEach(event => {
                 if (event.startsWith('Study:')) {
                     const subjectName = event.split(': ')[1].split(' (')[0];
-                    studySessions.push({ date, subject: subjectName, event, isArray: true });
+                    studySessions.push({ date, subject: subjectName, event, isArray: true, isReserved: reservedDaysSet.has(date) });
                 }
             });
         } else if (typeof events === 'string' && events.startsWith('Study:')) {
             const subjectName = events.split(': ')[1];
-            studySessions.push({ date, subject: subjectName, event: events, isArray: false });
+            studySessions.push({ date, subject: subjectName, event: events, isArray: false, isReserved: reservedDaysSet.has(date) });
         }
     });
     
@@ -782,6 +786,9 @@ function shuffleToPreventContinuousStudy(timetable) {
     
     for (let i = 0; i < studySessions.length; i++) {
         const currentSession = studySessions[i];
+        if (currentSession.isReserved) {
+            continue;
+        }
         let continuousCount = 1;
         let continuousGroup = [currentSession];
         
@@ -809,6 +816,9 @@ function shuffleToPreventContinuousStudy(timetable) {
             // Try to find a suitable swap for the 3rd day onwards
             for (let k = maxContinuousDays; k < continuousGroup.length; k++) {
                 const sessionToMove = continuousGroup[k];
+                if (sessionToMove.isReserved) {
+                    continue;
+                }
                 
                 // Find a suitable swap candidate
                 const swapCandidate = findSuitableSwap(sessionToMove, studySessions, timetable);
@@ -843,6 +853,7 @@ function findSuitableSwap(sessionToMove, allSessions, timetable) {
     
     for (const candidate of allSessions) {
         if (candidate.subject === sessionToMove.subject) continue;
+        if (candidate.isReserved) continue;
         
         const candidateDate = new Date(candidate.date);
         const dayDifference = Math.abs((candidateDate - moveDate) / (1000 * 60 * 60 * 24));
@@ -908,6 +919,9 @@ function canSubjectStudyOnDate(subjectName, dateString) {
 }
 
 function performSwap(session1, session2, timetable) {
+    if (session1.isReserved || session2.isReserved) {
+        return;
+    }
     // Get the current events for both dates
     const events1 = timetable[session1.date];
     const events2 = timetable[session2.date];
