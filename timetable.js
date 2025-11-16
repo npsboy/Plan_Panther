@@ -1169,9 +1169,6 @@ function add_subject(event) {
         display_subjects();
         // Don't automatically update calendar - wait for "Make Timetable" button
         
-        // Close sidebar on mobile after adding subject
-        handleSidebarOnAction();
-        
         // Clear the form
         document.getElementById("subject_name").value = "";
         document.getElementById("subject_date").value = "";
