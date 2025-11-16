@@ -82,7 +82,19 @@
         <div id="card">
             <div id="details">
 
-                <input type="text"  id="subject_name" placeholder="Subject Name">
+                <select id="subject_name">
+                    <option value="" disabled selected>Select Subject</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Social-Science">Social-Science</option>
+                    <option value="Math">Math</option>
+                    <option value="Geometry">Geometry</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="subject_name_other" placeholder="Enter subject name" style="display: none;">
                 <br><br><br>
                 <div id="date_OE"> 
                     Date of Exam:

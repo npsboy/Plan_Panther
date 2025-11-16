@@ -185,6 +185,20 @@ function setupInputPageListeners() {
         change_slider_color();
     }
     
+    // Set up subject dropdown change listener
+    const subjectDropdown = document.getElementById("subject_name");
+    const subjectOtherInput = document.getElementById("subject_name_other");
+    if (subjectDropdown && subjectOtherInput) {
+        subjectDropdown.addEventListener('change', function() {
+            if (this.value === "Other") {
+                subjectOtherInput.style.display = "block";
+            } else {
+                subjectOtherInput.style.display = "none";
+                subjectOtherInput.value = "";
+            }
+        });
+    }
+    
     // Set up add subject button
     const addButton = document.querySelector('#card .button.add');
     if (addButton) {
@@ -1106,7 +1120,9 @@ function add_subject(event) {
     }
     add_subject.isProcessing = true;
     
-    let subject_name = document.getElementById("subject_name").value.trim();
+    let subject_name_select = document.getElementById("subject_name").value.trim();
+    let subject_name_other = document.getElementById("subject_name_other").value.trim();
+    let subject_name = subject_name_select === "Other" ? subject_name_other : subject_name_select;
     let subject_date = document.getElementById("subject_date").value;
     let subject_difficulty = document.getElementById("subject_difficulty").value - 1;
     let subject_append = {};
@@ -1185,6 +1201,8 @@ function add_subject(event) {
         
         // Clear the form
         document.getElementById("subject_name").value = "";
+        document.getElementById("subject_name_other").value = "";
+        document.getElementById("subject_name_other").style.display = "none";
         document.getElementById("subject_date").value = "";
         document.getElementById("subject_difficulty").value = 2;
         change_slider_color();
@@ -1288,11 +1306,14 @@ function display_subjects() {
 
 function show_card() {
     let subject_name = document.getElementById("subject_name");
+    let subject_name_other = document.getElementById("subject_name_other");
     let subject_date = document.getElementById("subject_date");
     let subject_difficulty = document.getElementById("subject_difficulty");
     let background_darkener = document.getElementById("background_darkener");
     background_darkener.style.display = "flex";
     subject_name.value = "";
+    subject_name_other.value = "";
+    subject_name_other.style.display = "none";
     subject_date.value = "";
     subject_difficulty.value = 2;
     change_slider_color();
@@ -1302,6 +1323,9 @@ function show_card() {
 function cancel_card(e) {
     let background_darkener = document.getElementById("background_darkener");
     if (!e || e.target === background_darkener) {
+        document.getElementById("subject_name").value = "";
+        document.getElementById("subject_name_other").value = "";
+        document.getElementById("subject_name_other").style.display = "none";
         background_darkener.style.display = "none";
     }
 }
@@ -1311,11 +1335,23 @@ function edit_subject (subject_no){
     adding_new_subject = false; // Important: set to false for editing
     let edit_subject = subjects[subject_no];
     let subject_name = document.getElementById("subject_name");
+    let subject_name_other = document.getElementById("subject_name_other");
     let subject_date = document.getElementById("subject_date");
     let subject_difficulty = document.getElementById("subject_difficulty");
     let background_darkener = document.getElementById("background_darkener");
     background_darkener.style.display = "flex";
-    subject_name.value = edit_subject.name;
+    
+    // Check if the subject name is one of the predefined options
+    const predefinedSubjects = ["English", "Hindi", "Social-Science", "Math", "Geometry", "Physics", "Chemistry", "Biology"];
+    if (predefinedSubjects.includes(edit_subject.name)) {
+        subject_name.value = edit_subject.name;
+        subject_name_other.style.display = "none";
+    } else {
+        subject_name.value = "Other";
+        subject_name_other.value = edit_subject.name;
+        subject_name_other.style.display = "block";
+    }
+    
     subject_date.value = edit_subject.date;
     subject_difficulty.value = edit_subject.difficulty + 1; // +1 because the slider starts at 2
     change_slider_color();
