@@ -489,7 +489,8 @@ function generate_timetable() {
     
     // Start from tomorrow
     const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
     
     // Find the latest exam date
     const latestExamDate = new Date(Math.max(...subjects.map(s => new Date(s.date))));
@@ -498,12 +499,17 @@ function generate_timetable() {
     const allDays = [];
     const allTimeSlots = []; // Will include Sunday morning and afternoon slots
     const currentDate = new Date(tomorrow);
+    currentDate.setHours(0, 0, 0, 0);
     while (currentDate < latestExamDate) {
-        const dateString = currentDate.toISOString().split('T')[0];
+        // Use local date string instead of UTC to avoid timezone issues
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
         allDays.push(dateString);
         
         // Check if it's Sunday (day 0)
-        if (currentDate.getUTCDay() === 0) {
+        if (currentDate.getDay() === 0) {
             // Add two slots for Sunday: morning and afternoon
             allTimeSlots.push(dateString + '_morning');
             allTimeSlots.push(dateString + '_afternoon');
@@ -522,7 +528,12 @@ function generate_timetable() {
         const examDate = new Date(subject.date);
         const reservedDay = new Date(examDate);
         reservedDay.setDate(examDate.getDate() - 1);
-        const reservedDayString = reservedDay.toISOString().split('T')[0];
+        reservedDay.setHours(0, 0, 0, 0);
+        // Use local date string
+        const year = reservedDay.getFullYear();
+        const month = String(reservedDay.getMonth() + 1).padStart(2, '0');
+        const day = String(reservedDay.getDate()).padStart(2, '0');
+        const reservedDayString = `${year}-${month}-${day}`;
         
         // Only reserve the day if it's not busy and is within our date range
         if (reservedDay >= tomorrow && !DaysWhenBusy.includes(reservedDayString)) {
@@ -530,7 +541,7 @@ function generate_timetable() {
             subjectReservedDays[subject.name] = reservedDayString;
             
             // If reserved day is Sunday, reserve its morning and afternoon slots
-            if (reservedDay.getUTCDay() === 0) {
+            if (reservedDay.getDay() === 0) {
                 reservedTimeSlots.add(reservedDayString + '_morning');
                 reservedTimeSlots.add(reservedDayString + '_afternoon');
             } else {
@@ -587,7 +598,7 @@ function generate_timetable() {
                 const otherExamDate = new Date(otherSubject.date);
                 if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
                     // Check if other exam is on Sunday
-                    if (otherExamDate.getUTCDay() === 0) {
+                    if (otherExamDate.getDay() === 0) {
                         availableSlots.push(otherSubject.date + '_morning');
                         availableSlots.push(otherSubject.date + '_afternoon');
                     } else {
@@ -642,7 +653,7 @@ function generate_timetable() {
     Object.entries(subjectReservedDays).forEach(([subjectName, day]) => {
         // Check if reserved day is Sunday
         const reservedDate = new Date(day);
-        if (reservedDate.getUTCDay() === 0) {
+        if (reservedDate.getDay() === 0) {
             // For Sunday, we'll handle the slots individually during the main assignment
             // Just mark that this day has some reserved slots
             if (!timetable[day]) {
@@ -669,7 +680,7 @@ function generate_timetable() {
             if (otherSubject.name !== subject.name) {
                 const otherExamDate = new Date(otherSubject.date);
                 if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
-                    if (otherExamDate.getUTCDay() === 0) {
+                    if (otherExamDate.getDay() === 0) {
                         // Sunday exam day - add both slots
                         if (!usedTimeSlots.has(otherSubject.date + '_morning')) {
                             availableSlots.push(otherSubject.date + '_morning');
@@ -687,10 +698,11 @@ function generate_timetable() {
         });
         
         // Sort available slots by proximity to exam (closer = later in study schedule)
+        // Changed to ascending order so we start from tomorrow
         availableSlots.sort((a, b) => {
             const dateA = a.includes('_') ? a.split('_')[0] : a;
             const dateB = b.includes('_') ? b.split('_')[0] : b;
-            return new Date(dateB) - new Date(dateA);
+            return new Date(dateA) - new Date(dateB);
         });
         
         const slotsToAssign = finalAllocation[subject.name];
@@ -700,7 +712,7 @@ function generate_timetable() {
         const reservedDay = subjectReservedDays[subject.name];
         if (reservedDay) {
             const reservedDate = new Date(reservedDay);
-            if (reservedDate.getUTCDay() === 0) {
+            if (reservedDate.getDay() === 0) {
                 // This subject has priority for Sunday slots
                 // Try to assign at least one Sunday slot to this subject
                 const morningSlot = reservedDay + '_morning';
