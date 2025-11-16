@@ -166,11 +166,31 @@ function setupInputPageListeners() {
     const sharedData = urlParams.get('data');
     
     if (sharedData) {
-        // Clear localStorage and load shared data
-        console.log('Loading shared data from URL');
-        loadSharedDataFromURL(sharedData);
-        // Clear the URL parameter to clean up the address bar
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Check if there's existing data in localStorage
+        const hasExistingData = localStorage.getItem('planPanther_subjects') && 
+                               JSON.parse(localStorage.getItem('planPanther_subjects')).length > 0;
+        
+        if (hasExistingData) {
+            // Prompt user for confirmation
+            if (confirm('Are you sure you want to import a new timetable? This will delete your current one.')) {
+                console.log('Loading shared data from URL');
+                loadSharedDataFromURL(sharedData);
+                // Clear the URL parameter to clean up the address bar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                // User cancelled, load existing data instead
+                console.log('User cancelled import, loading existing data');
+                loadFromLocalStorage();
+                // Clear the URL parameter to clean up the address bar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        } else {
+            // No existing data, proceed with loading shared data
+            console.log('Loading shared data from URL');
+            loadSharedDataFromURL(sharedData);
+            // Clear the URL parameter to clean up the address bar
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     } else {
         // Load data from localStorage
         loadFromLocalStorage();
