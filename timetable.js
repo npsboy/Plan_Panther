@@ -123,13 +123,17 @@ function change_slider_color() {
 }
 
 async function main() {
+    // Check if there's shared data in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasSharedData = urlParams.has('data');
+    
     // Check if localStorage has existing data
     const hasExistingData = localStorage.getItem('planPanther_subjects') && 
                            JSON.parse(localStorage.getItem('planPanther_subjects')).length > 0;
     
-    if (hasExistingData) {
+    if (hasSharedData || hasExistingData) {
         // Skip landing page and go directly to input page
-        console.log('Existing data found, skipping landing page');
+        console.log(hasSharedData ? 'Shared data in URL, skipping landing page' : 'Existing data found, skipping landing page');
         await load_page("input_page.html");
         setupInputPageListeners();
     } else {
@@ -157,8 +161,20 @@ function setupLandingPageListeners() {
 function setupInputPageListeners() {
     console.log('Setting up input page listeners');
     
-    // Load data from localStorage
-    loadFromLocalStorage();
+    // Check if there's shared data in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedData = urlParams.get('data');
+    
+    if (sharedData) {
+        // Clear localStorage and load shared data
+        console.log('Loading shared data from URL');
+        loadSharedDataFromURL(sharedData);
+        // Clear the URL parameter to clean up the address bar
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        // Load data from localStorage
+        loadFromLocalStorage();
+    }
     
     // Initialize the subjects display
     display_subjects();
@@ -1581,6 +1597,96 @@ function toggleExportDropdown() {
     const options = document.getElementById('export-options');
     if (options) {
         options.classList.toggle('show');
+    }
+}
+
+// Function to load shared data from URL
+function loadSharedDataFromURL(encodedData) {
+    try {
+        // Decode the Base64 encoded data
+        const decodedData = atob(encodedData);
+        const sharedSubjects = JSON.parse(decodedData);
+        
+        // Clear localStorage
+        localStorage.clear();
+        
+        // Set the subjects
+        subjects = sharedSubjects;
+        DaysWhenBusy = [];
+        currentTimetable = null;
+        
+        // Save to localStorage
+        saveToLocalStorage();
+        
+        console.log('Loaded shared subjects:', subjects);
+        
+        // Auto-generate timetable
+        setTimeout(() => {
+            display_subjects();
+            generate_calendar();
+            update_calendar();
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error loading shared data:', error);
+        alert('Invalid share link. Loading your saved data instead.');
+        loadFromLocalStorage();
+    }
+}
+
+// Function to generate and share URL
+function shareURL() {
+    // Hide the dropdown after clicking
+    const options = document.getElementById('export-options');
+    if (options) {
+        options.classList.remove('show');
+    }
+    
+    if (subjects.length === 0) {
+        alert('No subjects to share. Please add subjects first.');
+        return;
+    }
+    
+    try {
+        // Create a simplified version of subjects with only necessary data
+        const shareData = subjects.map(subject => ({
+            name: subject.name,
+            date: subject.date,
+            difficulty: subject.difficulty,
+            color: subject.color
+        }));
+        
+        // Encode to Base64
+        const jsonData = JSON.stringify(shareData);
+        const encodedData = btoa(jsonData);
+        
+        // Create the share URL
+        const baseURL = window.location.origin + window.location.pathname;
+        const shareURL = `${baseURL}?data=${encodedData}`;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(shareURL).then(() => {
+            alert('Share link copied to clipboard! Anyone with this link can view and use your timetable setup.');
+        }).catch(err => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = shareURL;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('Share link copied to clipboard! Anyone with this link can view and use your timetable setup.');
+            } catch (err) {
+                alert('Share URL: ' + shareURL);
+            }
+            document.body.removeChild(textArea);
+        });
+        
+    } catch (error) {
+        console.error('Error generating share URL:', error);
+        alert('Failed to generate share link. Please try again.');
     }
 }
 
