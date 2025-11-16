@@ -1,6 +1,16 @@
 <link rel="stylesheet" href="input_page_styles.css">
 <body>
     
+    <!-- Hamburger Menu Button -->
+    <button id="sidebar-toggle" onclick="toggleSidebar()">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+    
     <div id="left_container">
         <div id="left_menu">  
 
@@ -31,6 +41,7 @@
         </div>
         <div id="right_calendar">
             <h2 style="text-align: center; color: #2C3E50; font-family: Arial black, Helvetica, sans-serif;">Study Plan</h2>
+            
             <div id="calendar_navigation">
                 <button id="prev_month" onclick="change_month(-1)">&#8592; Previous</button>
                 <span id="current_month"></span>
@@ -49,6 +60,11 @@
             
             <!-- Bottom action bar -->
             <div id="calendar_bottom_bar">
+                <!-- Mobile submit button (hidden on desktop) -->
+                <div id="mobile_submit_button" class="button_holder1">
+                    <button class="button submit">Make Study Plan</button>
+                </div>
+                
                 <button id="mark_busy_button_bar" onclick="toggle_mark_busy_mode()">Mark days when you are not free</button>
                 
                 <div class="export-dropdown">

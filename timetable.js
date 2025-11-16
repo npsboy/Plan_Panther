@@ -235,15 +235,17 @@ function setupInputPageListeners() {
         newNextButton.addEventListener('click', () => change_month(1));
     }
     
-    // Set up submit button
-    const submitButton = document.querySelector('.button.submit');
-    if (submitButton) {
-        submitButton.addEventListener('click', () => {
-            console.log('Make Timetable button clicked!'); // Debug
-            console.log('Current subjects:', subjects); // Debug
-            update_calendar();
-        });
-    }
+    // Set up submit buttons (both sidebar and mobile)
+    const submitButtons = document.querySelectorAll('.button.submit');
+    submitButtons.forEach(submitButton => {
+        if (submitButton) {
+            submitButton.addEventListener('click', () => {
+                console.log('Make Timetable button clicked!'); // Debug
+                console.log('Current subjects:', subjects); // Debug
+                update_calendar();
+            });
+        }
+    });
     
     // Set up export button
     const exportButton = document.getElementById('export-main-btn');
@@ -980,6 +982,9 @@ function add_subject(event) {
         display_subjects();
         // Don't automatically update calendar - wait for "Make Timetable" button
         
+        // Close sidebar on mobile after adding subject
+        handleSidebarOnAction();
+        
         // Clear the form
         document.getElementById("subject_name").value = "";
         document.getElementById("subject_date").value = "";
@@ -1689,4 +1694,32 @@ function toggleBusyDay(dayElement) {
     saveToLocalStorage();
     
     console.log('All busy days:', DaysWhenBusy); // Debug log
+}
+
+// Sidebar toggle functionality for mobile
+function toggleSidebar() {
+    const leftMenu = document.getElementById('left_menu');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (leftMenu && overlay) {
+        leftMenu.classList.toggle('show');
+        overlay.classList.toggle('show');
+    }
+}
+
+function closeSidebar() {
+    const leftMenu = document.getElementById('left_menu');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (leftMenu && overlay) {
+        leftMenu.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+}
+
+// Close sidebar when a subject is added or edited (on mobile)
+function handleSidebarOnAction() {
+    if (window.innerWidth <= 768) {
+        closeSidebar();
+    }
 }

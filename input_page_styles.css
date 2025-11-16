@@ -1,6 +1,7 @@
 #left_container {
     display: flex;
     height: 100vh;
+    position: relative;
 }
 
 #left_menu {
@@ -9,6 +10,52 @@
     background-color: white;
     height: 100vh;
     width: 350px;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+/* Hamburger Menu Button */
+#sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background-color: transparent;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+#sidebar-toggle:hover {
+    background-color: rgba(44, 62, 80, 0.1);
+    border-radius: 5px;
+}
+
+.hamburger-line {
+    width: 25px;
+    height: 3px;
+    background-color: #2c3e50;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar overlay for mobile */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
 body {
@@ -96,6 +143,7 @@ ol {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
+    z-index: 1100;
 }
 
 #card {
@@ -110,6 +158,7 @@ ol {
     display: flex;
     flex-direction: column;
     padding-top: 40px;
+    z-index: 1101;
 }
 
 #details {
@@ -412,6 +461,12 @@ input.yellow_thumb::-webkit-slider-thumb {
     line-height: 1.2;
 }
 
+/* Mobile submit button - hidden by default */
+#mobile_submit_button {
+    display: none;
+    width: 100%;
+}
+
 /* Update export dropdown positioning for bottom bar */
 #calendar_bottom_bar .export-dropdown {
     position: relative;
@@ -434,4 +489,217 @@ input.yellow_thumb::-webkit-slider-thumb {
 
 #calendar_bottom_bar .export-options.show {
     display: block;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    #sidebar-toggle {
+        display: flex;
+    }
+
+    #sidebar-overlay.show {
+        display: block;
+    }
+
+    #left_menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #left_menu.show {
+        transform: translateX(0);
+    }
+
+    #right_calendar {
+        width: 100%;
+        border-left: none;
+        padding: 0px 10px 0px 10px;
+        overflow-y: auto;
+        height: 100vh;
+    }
+
+    #right_calendar h2 {
+        margin-top: 55px;
+        margin-bottom: 5px;
+        font-size: 18px;
+    }
+
+    /* Show mobile submit button below calendar */
+    #mobile_submit_button {
+        display: block !important;
+        width: 100%;
+        padding: 0px;
+        margin: 0px;
+    }
+
+    #mobile_submit_button .submit {
+        width: 100%;
+        height: 40px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    #card {
+        left: 50%;
+        transform: translateX(-50%);
+        top: 10%;
+        width: 90%;
+        max-width: 370px;
+    }
+
+    #details {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    #subject_name {
+        width: 100%;
+    }
+
+    #calendar {
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .calendar-day {
+        padding: 5px;
+        min-height: 30px;
+    }
+
+    .calendar-event {
+        font-size: 10px;
+        padding: 1px 3px;
+    }
+
+    #calendar_navigation {
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    #calendar_navigation button {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    #current_month {
+        font-size: 14px;
+    }
+
+    #day_labels {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    #calendar_bottom_bar {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 10px;
+        margin-top: 10px;
+    }
+
+    #mark_busy_button_bar {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px;
+        height: auto;
+    }
+
+    .export-dropdown {
+        width: 100%;
+    }
+
+    .export {
+        width: 100%;
+        height: 40px;
+    }
+
+    #calendar_bottom_bar .export-options {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #right_calendar {
+        padding: 0px 5px 0px 5px;
+    }
+
+    #right_calendar h2 {
+        margin-top: 50px;
+        font-size: 16px;
+        margin-bottom: 3px;
+    }
+
+    #calendar {
+        gap: 3px;
+        font-size: 10px;
+    }
+
+    .calendar-day {
+        padding: 3px;
+        min-height: 25px;
+    }
+
+    .calendar-event {
+        font-size: 8px;
+        padding: 1px 2px;
+        margin-top: 2px;
+    }
+
+    #calendar_navigation button {
+        font-size: 10px;
+        padding: 5px;
+    }
+
+    #current_month {
+        font-size: 11px;
+    }
+
+    #day_labels {
+        font-size: 10px;
+        margin-bottom: 3px;
+    }
+
+    .calendar-day span {
+        font-size: 10px;
+    }
+
+    #calendar_bottom_bar {
+        gap: 6px;
+        padding: 6px 5px;
+        margin-top: 8px;
+    }
+
+    #mobile_submit_button .submit {
+        height: 38px;
+        font-size: 12px;
+    }
+
+    #mark_busy_button_bar {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    .export {
+        height: 38px;
+        font-size: 13px;
+    }
+
+    #sidebar-toggle {
+        top: 10px;
+        left: 10px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .hamburger-line {
+        width: 20px;
+        height: 2px;
+    }
 }
