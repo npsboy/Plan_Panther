@@ -682,13 +682,22 @@ function generate_timetable() {
         
         if (eligibleSubjects.length === 0) break;
         
-        // Sort by highest remainder, then by highest weight
+        // Sort by highest difficulty first, then by highest remainder, then by highest weight
         eligibleSubjects.sort((a, b) => {
-            const remainderDiff = remainders[b.name] - remainders[a.name];
-            if (Math.abs(remainderDiff) < 0.001) { // If remainders are nearly equal
-                return subjectWeights[b.name] - subjectWeights[a.name];
+            // First priority: difficulty (higher is better)
+            const difficultyDiff = b.difficulty - a.difficulty;
+            if (difficultyDiff !== 0) {
+                return difficultyDiff;
             }
-            return remainderDiff;
+            
+            // Second priority: remainder
+            const remainderDiff = remainders[b.name] - remainders[a.name];
+            if (Math.abs(remainderDiff) > 0.001) { // If remainders are different
+                return remainderDiff;
+            }
+            
+            // Third priority: weight
+            return subjectWeights[b.name] - subjectWeights[a.name];
         });
         
         // Give one extra time slot to the top subject
