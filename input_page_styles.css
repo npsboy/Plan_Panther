@@ -480,6 +480,39 @@ input.yellow_thumb::-webkit-slider-thumb {
     line-height: 1.2;
 }
 
+/* Mark Holiday Button in Bottom Bar */
+#mark_holiday_button_bar {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    height: 40px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+#mark_holiday_button_bar:hover {
+    background-color: #ff5252;
+    transform: scale(1.05);
+}
+
+#mark_holiday_button_bar.active {
+    background-color: #d32f2f;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+/* Holiday Styling */
+.calendar-day.holiday {
+    background-color: #ffe0e0 !important;
+    border-color: #ffb3b3 !important;
+    cursor: pointer;
+}
+
 /* Mobile submit button - hidden by default */
 #mobile_submit_button {
     display: none;
@@ -628,6 +661,13 @@ input.yellow_thumb::-webkit-slider-thumb {
         height: auto;
     }
 
+    #mark_holiday_button_bar {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px;
+        height: auto;
+    }
+
     .export-dropdown {
         width: 100%;
     }
@@ -701,6 +741,11 @@ input.yellow_thumb::-webkit-slider-thumb {
     }
 
     #mark_busy_button_bar {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    #mark_holiday_button_bar {
         font-size: 11px;
         padding: 6px;
     }

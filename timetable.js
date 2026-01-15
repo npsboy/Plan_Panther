@@ -8,12 +8,15 @@ let today = new Date();
 let currentTimetable = null; // Store the generated timetable
 let DaysWhenBusy = []; // Array to store busy days
 let markBusyMode = false; // Flag for mark busy mode
+let Holidays = []; // Array to store holidays
+let markHolidayMode = false; // Flag for mark holiday mode
 
 // localStorage utility functions
 function saveToLocalStorage() {
     try {
         localStorage.setItem('planPanther_subjects', JSON.stringify(subjects));
         localStorage.setItem('planPanther_busyDays', JSON.stringify(DaysWhenBusy));
+        localStorage.setItem('planPanther_holidays', JSON.stringify(Holidays));
         if (currentTimetable) {
             localStorage.setItem('planPanther_timetable', JSON.stringify(currentTimetable));
         }
@@ -39,6 +42,13 @@ function loadFromLocalStorage() {
             console.log('Loaded busy days from localStorage:', DaysWhenBusy);
         }
         
+        // Load holidays
+        const savedHolidays = localStorage.getItem('planPanther_holidays');
+        if (savedHolidays) {
+            Holidays = JSON.parse(savedHolidays);
+            console.log('Loaded holidays from localStorage:', Holidays);
+        }
+        
         // Load timetable
         const savedTimetable = localStorage.getItem('planPanther_timetable');
         if (savedTimetable) {
@@ -50,6 +60,7 @@ function loadFromLocalStorage() {
         // Reset to defaults if there's an error
         subjects = [];
         DaysWhenBusy = [];
+        Holidays = [];
         currentTimetable = null;
     }
 }
@@ -58,6 +69,7 @@ function clearLocalStorage() {
     try {
         localStorage.removeItem('planPanther_subjects');
         localStorage.removeItem('planPanther_busyDays');
+        localStorage.removeItem('planPanther_holidays');
         localStorage.removeItem('planPanther_timetable');
         console.log('localStorage cleared');
     } catch (error) {
@@ -66,10 +78,11 @@ function clearLocalStorage() {
 }
 
 function clearAllData() {
-    if (confirm('Are you sure you want to clear all data? This will remove all subjects, busy days, and the generated timetable. This action cannot be undone.')) {
+    if (confirm('Are you sure you want to clear all data? This will remove all subjects, busy days, holidays, and the generated timetable. This action cannot be undone.')) {
         // Clear in-memory data
         subjects = [];
         DaysWhenBusy = [];
+        Holidays = [];
         currentTimetable = null;
         
         // Clear localStorage
@@ -402,10 +415,17 @@ function generate_calendar() {
             dayElement.classList.add("busy");
         }
         
-        // Add click event listener for marking busy days
+        // Check if this day is marked as a holiday
+        if (Holidays.includes(dayElement.dataset.date)) {
+            dayElement.classList.add("holiday");
+        }
+        
+        // Add click event listener for marking busy days and holidays
         dayElement.addEventListener('click', function() {
             if (markBusyMode) {
                 toggleBusyDay(this);
+            } else if (markHolidayMode) {
+                toggleHoliday(this);
             }
         });
         
@@ -434,10 +454,17 @@ function generate_calendar() {
             dayElement.classList.add("busy");
         }
         
-        // Add click event listener for marking busy days
+        // Check if this day is marked as a holiday
+        if (Holidays.includes(dayElement.dataset.date)) {
+            dayElement.classList.add("holiday");
+        }
+        
+        // Add click event listener for marking busy days and holidays
         dayElement.addEventListener('click', function() {
             if (markBusyMode) {
                 toggleBusyDay(this);
+            } else if (markHolidayMode) {
+                toggleHoliday(this);
             }
         });
         
@@ -470,10 +497,17 @@ function generate_calendar() {
                 dayElement.classList.add("busy");
             }
             
-            // Add click event listener for marking busy days
+            // Check if this day is marked as a holiday
+            if (Holidays.includes(dayElement.dataset.date)) {
+                dayElement.classList.add("holiday");
+            }
+            
+            // Add click event listener for marking busy days and holidays
             dayElement.addEventListener('click', function() {
                 if (markBusyMode) {
                     toggleBusyDay(this);
+                } else if (markHolidayMode) {
+                    toggleHoliday(this);
                 }
             });
             
@@ -485,6 +519,7 @@ function generate_calendar() {
 function generate_timetable() {
     console.log('Generating timetable for subjects:', subjects); // Debug
     console.log('Days marked as busy:', DaysWhenBusy); // Debug
+    console.log('Days marked as holidays:', Holidays); // Debug
     if (subjects.length === 0) {
         console.log('No subjects found, returning empty timetable'); // Debug
         return {};
@@ -517,7 +552,7 @@ function generate_timetable() {
     
     // Get all days from tomorrow to the day before the last test
     const allDays = [];
-    const allTimeSlots = []; // Will include Sunday morning and afternoon slots
+    const allTimeSlots = []; // Will include Sunday/Holiday morning and afternoon slots
     const currentDate = new Date(tomorrow);
     currentDate.setHours(0, 0, 0, 0);
     while (currentDate < latestExamDate) {
@@ -528,9 +563,9 @@ function generate_timetable() {
         const dateString = `${year}-${month}-${day}`;
         allDays.push(dateString);
         
-        // Check if it's Sunday (day 0)
-        if (currentDate.getDay() === 0) {
-            // Add two slots for Sunday: morning and afternoon
+        // Check if it's Sunday (day 0) or a Holiday
+        if (currentDate.getDay() === 0 || Holidays.includes(dateString)) {
+            // Add two slots for Sunday/Holiday: morning and afternoon
             allTimeSlots.push(dateString + '_morning');
             allTimeSlots.push(dateString + '_afternoon');
         } else {
@@ -572,7 +607,7 @@ function generate_timetable() {
     
     // Get assignable time slots (all slots minus reserved slots and busy days)
     const assignableTimeSlots = allTimeSlots.filter(slot => {
-        // Extract the date from the slot (remove time suffix for Sunday slots)
+        // Extract the date from the slot (remove time suffix for Sunday/Holiday slots)
         const slotDate = slot.includes('_') ? slot.split('_')[0] : slot;
         
         // Exclude if slot is reserved or if the day is marked as busy
@@ -617,8 +652,8 @@ function generate_timetable() {
             if (otherSubject.name !== subject.name) {
                 const otherExamDate = new Date(otherSubject.date);
                 if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
-                    // Check if other exam is on Sunday
-                    if (otherExamDate.getDay() === 0) {
+                    // Check if other exam is on Sunday or Holiday
+                    if (otherExamDate.getDay() === 0 || Holidays.includes(otherExamDate.toISOString().split("T")[0])) {
                         availableSlots.push(otherSubject.date + '_morning');
                         availableSlots.push(otherSubject.date + '_afternoon');
                     } else {
@@ -671,10 +706,10 @@ function generate_timetable() {
     
     // First, assign reserved days (day before exam)
     Object.entries(subjectReservedDays).forEach(([subjectName, day]) => {
-        // Check if reserved day is Sunday
+        // Check if reserved day is Sunday or Holiday
         const reservedDate = new Date(day);
-        if (reservedDate.getDay() === 0) {
-            // For Sunday, we'll handle the slots individually during the main assignment
+        if (reservedDate.getDay() === 0 || Holidays.includes(reservedDate.toISOString().split("T")[0])) {
+            // For Sunday/Holiday, we'll handle the slots individually during the main assignment
             // Just mark that this day has some reserved slots
             if (!timetable[day]) {
                 timetable[day] = [];
@@ -700,8 +735,8 @@ function generate_timetable() {
             if (otherSubject.name !== subject.name) {
                 const otherExamDate = new Date(otherSubject.date);
                 if (otherExamDate < examDate && !DaysWhenBusy.includes(otherSubject.date)) {
-                    if (otherExamDate.getDay() === 0) {
-                        // Sunday exam day - add both slots
+                    if (otherExamDate.getDay() === 0 || Holidays.includes(otherSubject.date)) {
+                        // Sunday/Holiday exam day - add both slots
                         if (!usedTimeSlots.has(otherSubject.date + '_morning')) {
                             availableSlots.push(otherSubject.date + '_morning');
                         }
@@ -728,13 +763,13 @@ function generate_timetable() {
         const slotsToAssign = finalAllocation[subject.name];
         let assignedSlots = 0;
         
-        // First, handle reserved day priority if this subject has a reserved Sunday
+        // First, handle reserved day priority if this subject has a reserved Sunday/Holiday
         const reservedDay = subjectReservedDays[subject.name];
         if (reservedDay) {
             const reservedDate = new Date(reservedDay);
-            if (reservedDate.getDay() === 0) {
-                // This subject has priority for Sunday slots
-                // Try to assign at least one Sunday slot to this subject
+            if (reservedDate.getDay() === 0 || Holidays.includes(reservedDay)) {
+                // This subject has priority for Sunday/Holiday slots
+                // Try to assign at least one slot to this subject
                 const morningSlot = reservedDay + '_morning';
                 const afternoonSlot = reservedDay + '_afternoon';
                 
@@ -776,7 +811,7 @@ function generate_timetable() {
             
             // Extract date and time from slot
             if (slot.includes('_')) {
-                // Sunday slot
+                // Sunday/Holiday slot
                 const [date, timeOfDay] = slot.split('_');
                 const timeLabel = timeOfDay === 'morning' ? 'Morning' : 'Afternoon';
                 
@@ -1611,7 +1646,7 @@ function exportToGoogleCalendar() {
             
             icsContent += `END:VEVENT\r\n`;
         }
-    }
+    };
 
     icsContent += `END:VCALENDAR\r\n`;
 
@@ -1651,20 +1686,23 @@ function loadSharedDataFromURL(encodedData) {
     try {
         // Decode the Base64 encoded data
         const decodedData = atob(encodedData);
-        const sharedSubjects = JSON.parse(decodedData);
+        const sharedData = JSON.parse(decodedData);
         
         // Clear localStorage
         localStorage.clear();
         
         // Set the subjects
-        subjects = sharedSubjects;
-        DaysWhenBusy = [];
+        subjects = sharedData.subjects || sharedData; // Support old format (just subjects array)
+        DaysWhenBusy = sharedData.busyDays || [];
+        Holidays = sharedData.holidays || [];
         currentTimetable = null;
         
         // Save to localStorage
         saveToLocalStorage();
         
         console.log('Loaded shared subjects:', subjects);
+        console.log('Loaded shared busy days:', DaysWhenBusy);
+        console.log('Loaded shared holidays:', Holidays);
         
         // Auto-generate timetable
         setTimeout(() => {
@@ -1695,12 +1733,19 @@ function shareURL() {
     
     try {
         // Create a simplified version of subjects with only necessary data
-        const shareData = subjects.map(subject => ({
+        const shareSubjects = subjects.map(subject => ({
             name: subject.name,
             date: subject.date,
             difficulty: subject.difficulty,
             color: subject.color
         }));
+        
+        // Create share data object with subjects, busy days, and holidays
+        const shareData = {
+            subjects: shareSubjects,
+            busyDays: DaysWhenBusy,
+            holidays: Holidays
+        };
         
         // Encode to Base64
         const jsonData = JSON.stringify(shareData);
@@ -1734,6 +1779,128 @@ function shareURL() {
         console.error('Error generating share URL:', error);
         alert('Failed to generate share link. Please try again.');
     }
+}
+
+function generateEventHTML(eventText) {
+    if (eventText.includes('Exam:') && eventText.includes('Study:')) {
+        // Combined event
+        const parts = eventText.split(', ');
+        let html = '';
+        parts.forEach(part => {
+            if (part.startsWith('Exam:')) {
+                html += `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
+            } else if (part.startsWith('Study:')) {
+                const subjectName = part.split(': ')[1].split(' (')[0];
+                const subject = subjects.find(s => s.name === subjectName);
+                const backgroundColor = subject ? subject.color : '#407CFF';
+                html += `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
+            }
+        });
+        return html;
+    } else if (eventText.startsWith('Exam:')) {
+        return `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
+    } else if (eventText.startsWith('Study:')) {
+        // Try to match subject color
+        const subjectName = eventText.split(': ')[1].split(' (')[0];
+        const subject = subjects.find(s => s.name === subjectName);
+        const backgroundColor = subject ? subject.color : '#407CFF';
+        return `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
+    }
+    return '';
+}
+
+// Mark busy days functionality
+function toggle_mark_busy_mode() {
+    markBusyMode = !markBusyMode;
+    const button = document.getElementById('mark_busy_button_bar');
+    
+    if (markBusyMode) {
+        button.textContent = 'Click days to mark as busy (Click here to exit)';
+        button.classList.add('active');
+        // Add visual indication that we're in mark busy mode
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'crosshair';
+
+
+        });
+    } else {
+        button.textContent = 'Mark days when you are not free';
+        button.classList.remove('active');
+        // Reset cursor for calendar days
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'pointer';
+        });
+    }
+}
+
+function toggleBusyDay(dayElement) {
+    const date = dayElement.dataset.date;
+    const index = DaysWhenBusy.indexOf(date);
+    
+    if (index === -1) {
+        // Day is not busy, mark it as busy
+        DaysWhenBusy.push(date);
+        dayElement.classList.add('busy');
+        console.log(`Marked ${date} as busy`);
+    } else {
+        // Day is busy, remove it from busy days
+        DaysWhenBusy.splice(index, 1);
+        dayElement.classList.remove('busy');
+        console.log(`Removed ${date} from busy days`);
+    }
+    
+    // Save busy days to localStorage
+    saveToLocalStorage();
+    
+    console.log('All busy days:', DaysWhenBusy); // Debug log
+}
+
+// Mark holiday functionality
+function toggle_mark_holiday_mode() {
+    markHolidayMode = !markHolidayMode;
+    const button = document.getElementById('mark_holiday_button_bar');
+    
+    if (markHolidayMode) {
+        button.textContent = 'Click days to mark as holidays (Click here to exit)';
+        button.classList.add('active');
+        // Add visual indication that we're in mark holiday mode
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'crosshair';
+        });
+    } else {
+        button.textContent = 'Mark Holidays';
+        button.classList.remove('active');
+        // Reset cursor for calendar days
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+            day.style.cursor = 'pointer';
+        });
+    }
+}
+
+function toggleHoliday(dayElement) {
+    const date = dayElement.dataset.date;
+    const index = Holidays.indexOf(date);
+    
+    if (index === -1) {
+        // Day is not a holiday, mark it as holiday
+        Holidays.push(date);
+        dayElement.classList.add('holiday');
+        console.log(`Marked ${date} as holiday`);
+    } else {
+        // Day is a holiday, remove it from holidays
+        Holidays.splice(index, 1);
+        dayElement.classList.remove('holiday');
+        console.log(`Removed ${date} from holidays`);
+    }
+    
+    // Save holidays to localStorage
+    saveToLocalStorage();
+    
+    console.log('All holidays:', Holidays); // Debug log
 }
 
 // Placeholder function for PDF export
@@ -1926,11 +2093,13 @@ function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
     const date = new Date(dateString);
     const isSunday = date.getDay() === 0;
     const isBusy = DaysWhenBusy.includes(dateString);
+    const isHoliday = Holidays.includes(dateString);
     
     let dayClass = 'calendar-day';
     if (isOverflow) dayClass += ' overflow';
     if (isSunday) dayClass += ' sunday';
     if (isBusy) dayClass += ' busy';
+    if (isHoliday) dayClass += ' holiday';
     
     let html = `<div class="${dayClass}">`;
     html += `<div class="day-number">${dayNumber}</div>`;
@@ -1953,36 +2122,10 @@ function generateDayHTML(dayNumber, dateString, timetable, isOverflow) {
         html += '<div class="busy-indicator">●</div>';
     }
     
+    // Holiday is now only marked by background color, no indicator
+    
     html += '</div>';
     return html;
-}
-
-function generateEventHTML(eventText) {
-    if (eventText.includes('Exam:') && eventText.includes('Study:')) {
-        // Combined event
-        const parts = eventText.split(', ');
-        let html = '';
-        parts.forEach(part => {
-            if (part.startsWith('Exam:')) {
-                html += `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
-            } else if (part.startsWith('Study:')) {
-                const subjectName = part.split(': ')[1].split(' (')[0];
-                const subject = subjects.find(s => s.name === subjectName);
-                const backgroundColor = subject ? subject.color : '#407CFF';
-                html += `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
-            }
-        });
-        return html;
-    } else if (eventText.startsWith('Exam:')) {
-        return `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
-    } else if (eventText.startsWith('Study:')) {
-        // Try to match subject color
-        const subjectName = eventText.split(': ')[1].split(' (')[0];
-        const subject = subjects.find(s => s.name === subjectName);
-        const backgroundColor = subject ? subject.color : '#407CFF';
-        return `<div class="calendar-event study-event" style="background-color: ${backgroundColor} !important; border: 2px solid ${backgroundColor}; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
-    }
-    return '';
 }
 
 function generateLegendHTML() {
@@ -2004,6 +2147,10 @@ function generateLegendHTML() {
             <div class="legend-item">
                 <span class="legend-color" style="background-color: #fff5f5;"></span>
                 Sundays
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: #ffe0e0;"></span>
+                Holidays
             </div>
         </div>
     `;
@@ -2034,52 +2181,6 @@ function generateSubjectsListHTML() {
     
     html += '</div>';
     return html;
-}
-
-// Mark busy days functionality
-function toggle_mark_busy_mode() {
-    markBusyMode = !markBusyMode;
-    const button = document.getElementById('mark_busy_button_bar');
-    
-    if (markBusyMode) {
-        button.textContent = 'Click days to mark as busy (Click here to exit)';
-        button.classList.add('active');
-        // Add visual indication that we're in mark busy mode
-        const calendarDays = document.querySelectorAll('.calendar-day');
-        calendarDays.forEach(day => {
-            day.style.cursor = 'crosshair';
-        });
-    } else {
-        button.textContent = 'Mark days when you are not free';
-        button.classList.remove('active');
-        // Reset cursor for calendar days
-        const calendarDays = document.querySelectorAll('.calendar-day');
-        calendarDays.forEach(day => {
-            day.style.cursor = 'pointer';
-        });
-    }
-}
-
-function toggleBusyDay(dayElement) {
-    const date = dayElement.dataset.date;
-    const index = DaysWhenBusy.indexOf(date);
-    
-    if (index === -1) {
-        // Day is not busy, mark it as busy
-        DaysWhenBusy.push(date);
-        dayElement.classList.add('busy');
-        console.log(`Marked ${date} as busy`);
-    } else {
-        // Day is busy, remove it from busy days
-        DaysWhenBusy.splice(index, 1);
-        dayElement.classList.remove('busy');
-        console.log(`Removed ${date} from busy days`);
-    }
-    
-    // Save busy days to localStorage
-    saveToLocalStorage();
-    
-    console.log('All busy days:', DaysWhenBusy); // Debug log
 }
 
 // Sidebar toggle functionality for mobile
