@@ -113,26 +113,67 @@ function change_slider_color() {
     let slider = document.getElementById("subject_difficulty");
     let difficulty_text = document.getElementById("difficulty_text");
 
-    //removes the .green-thumb, .yellow-thumb, .red-thumb classes from the slider
-    slider.classList.remove("green_thumb", "yellow_thumb", "red_thumb");
-    if(slider.value < 2){
-        slider.value = 2;
+    // We assume the slider has min="0" and max="5" in HTML based on requirements
+    // to have an empty slot at 0 and start from 1.
+    const min = 0; 
+    const max = 5;
+    let val = Number(slider.value);
+
+    // Disable position 0: clamp value to minimum 1
+    // This allows the visual indent for "Very Easy" so it doesn't sit at the far left edge
+    if (val < 1) {
+        val = 1;
+        slider.value = 1;
     }
-    if(slider.value == 2){
-        slider.classList.add("green_thumb")
-        slider.style.background = "linear-gradient(to right, #00B050, #00B050 33%, #2C3E50 33%, #2C3E50 100%)"
-        difficulty_text.textContent = "Easy";
+    if (val > max) val = max;
+
+    // Remove all difficulty-related classes
+    slider.classList.remove("lightgreen_thumb", "green_thumb", "yellow_thumb", "red_thumb", "darkred_thumb");
+
+    // Pixel Perfect Gradient Calculation
+    // CSS defines track width: 200px and thumb width: 20px
+    // The thumb center moves within a 180px range (200 - 20)
+    // Offset is half thumb width (10px) to start
+    
+    // Normalize value (0 to 1) based on track range 0-5
+    const normalized = (val - min) / (max - min);
+    
+    // Calculate center of thumb in pixels:
+    // 10px (start offset) + normalized * 180px (travel distance)
+    const centerPx = 10 + (normalized * 180);
+    
+    // Convert to percentage of total track width (200px)
+    const adjustedPct = (centerPx / 200) * 100;
+
+    // pick color by level
+    let activeColor = "#00B050";
+    let text = "Easy";
+
+    if (val === 1) {
+        activeColor = "#90EE90"; // Very Easy
+        text = "Very Easy";
+        slider.classList.add("lightgreen_thumb");
+    } else if (val === 2) {
+        activeColor = "#00B050"; // Easy
+        text = "Easy";
+        slider.classList.add("green_thumb");
+    } else if (val === 3) {
+        activeColor = "#FFC000"; // Medium
+        text = "Medium";
+        slider.classList.add("yellow_thumb");
+    } else if (val === 4) {
+        activeColor = "#FF0000"; // Hard
+        text = "Hard";
+        slider.classList.add("red_thumb");
+    } else if (val === 5) {
+        activeColor = "#8B0000"; // Very Hard
+        text = "Very Hard";
+        slider.classList.add("darkred_thumb");
     }
-    if(slider.value == 3){
-        slider.classList.add("yellow_thumb")
-        slider.style.background = "linear-gradient(to right, #FFC000, #FFC000 66%, #2C3E50 66%, #2C3E50 100%)"
-        difficulty_text.textContent = "Medium";
-    }
-    if(slider.value == 4){
-        slider.classList.add("red_thumb")
-        slider.style.background = "linear-gradient(to right, #FF0000, #FF0000 100%, #2C3E50 100%)"
-        difficulty_text.textContent = "Hard";
-    }
+
+    // set background gradient stop at the calculated center of thumb
+    slider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${adjustedPct}%, #2C3E50 ${adjustedPct}%, #2C3E50 100%)`;
+    difficulty_text.textContent = text;
 }
 
 async function main() {
@@ -618,9 +659,8 @@ function generate_timetable() {
     const subjectWeights = {};
     let totalWeight = 0;
     subjects.forEach((subject, index) => {
-        // difficulty ranges from 0-2, let's make it 1-3 for weight calculation
-        const difficulty = subject.difficulty + 1;
-        // Use importance value of 2 for all subjects
+        // difficulty now ranges from 1-5; use directly for weight
+        const difficulty = Number(subject.difficulty);
         const importance = 2;
         const weight = difficulty * importance;
         subjectWeights[subject.name] = weight;
@@ -1216,7 +1256,10 @@ function add_subject(event) {
     let subject_name_other = document.getElementById("subject_name_other").value.trim();
     let subject_name = subject_name_select === "Other" ? subject_name_other : subject_name_select;
     let subject_date = document.getElementById("subject_date").value;
-    let subject_difficulty = document.getElementById("subject_difficulty").value - 1;
+    // use slider value directly (0..5), but skip 0 by mapping 0->1
+    let subject_difficulty = Number(document.getElementById("subject_difficulty").value);
+    if (subject_difficulty === 0) subject_difficulty = 1;
+    
     let subject_append = {};
     let background_darkener = document.getElementById("background_darkener");
     let subject_list_display = document.getElementById("subjects_list");
@@ -1296,6 +1339,7 @@ function add_subject(event) {
         document.getElementById("subject_name_other").value = "";
         document.getElementById("subject_name_other").style.display = "none";
         document.getElementById("subject_date").value = "";
+        // Reset form to default slider value 2 (Easy)
         document.getElementById("subject_difficulty").value = 2;
         change_slider_color();
     }
@@ -1329,15 +1373,21 @@ function display_subjects() {
             border-bottom: 1px solid #ddd;
         `;
 
-        // Determine difficulty color
-        let difficultyColor = '#00B050'; // Green for Easy (stored as 1)
-        let difficultyText = 'Easy';
+        // Determine difficulty color - now supports 1..5
+        let difficultyColor = '#90EE90'; // Very Easy (1)
+        let difficultyText = 'Very Easy';
         if (subject.difficulty === 2) {
-            difficultyColor = '#FFC000'; // Yellow/Orange for Medium (stored as 2)
-            difficultyText = 'Medium';
+            difficultyColor = '#00B050'; // Easy (2)
+            difficultyText = 'Easy';
         } else if (subject.difficulty === 3) {
-            difficultyColor = '#FF0000'; // Red for Hard (stored as 3)
+            difficultyColor = '#FFC000'; // Medium (3)
+            difficultyText = 'Medium';
+        } else if (subject.difficulty === 4) {
+            difficultyColor = '#FF0000'; // Hard (4)
             difficultyText = 'Hard';
+        } else if (subject.difficulty === 5) {
+            difficultyColor = '#8B0000'; // Very Hard (5)
+            difficultyText = 'Very Hard';
         }
 
         let subject_info = document.createElement("div");
@@ -1445,7 +1495,8 @@ function edit_subject (subject_no){
     }
     
     subject_date.value = edit_subject.date;
-    subject_difficulty.value = edit_subject.difficulty + 1; // +1 because the slider starts at 2
+    // slider now expects 0..5
+    subject_difficulty.value = edit_subject.difficulty;
     change_slider_color();
 }
 
@@ -1796,6 +1847,7 @@ function generateEventHTML(eventText) {
         const parts = eventText.split(', ');
         let html = '';
         parts.forEach(part => {
+           
             if (part.startsWith('Exam:')) {
                 html += `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${part}</div>`;
             } else if (part.startsWith('Study:')) {
@@ -1807,7 +1859,7 @@ function generateEventHTML(eventText) {
         });
         return html;
     } else if (eventText.startsWith('Exam:')) {
-        return `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border: 2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
+        return `<div class="calendar-event exam-event" style="background-color: #FF0000 !important; border:  2px solid #CC0000; -webkit-print-color-adjust: exact; color-adjust: exact; print-color-adjust: exact;">${eventText}</div>`;
     } else if (eventText.startsWith('Study:')) {
         // Try to match subject color
         const subjectName = eventText.split(': ')[1].split(' (')[0];
@@ -2172,12 +2224,16 @@ function generateSubjectsListHTML() {
     `;
     
     subjects.forEach((subject, index) => {
-        // Convert stored difficulty (1-3) to correct text
-        let difficultyText = 'Easy'; // Default
+        // Convert stored difficulty (1-5) to correct text
+        let difficultyText = 'Very Easy';
         if (subject.difficulty === 2) {
-            difficultyText = 'Medium';
+            difficultyText = 'Easy';
         } else if (subject.difficulty === 3) {
+            difficultyText = 'Medium';
+        } else if (subject.difficulty === 4) {
             difficultyText = 'Hard';
+        } else if (subject.difficulty === 5) {
+            difficultyText = 'Very Hard';
         }
         
         html += `
