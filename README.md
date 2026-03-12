@@ -6,7 +6,7 @@
 A web app that helps students create a study plan for their exams.
 <br> <br>
 
-[See this working](https://npsboy.github.io/Plan_Panther/)
+[See this working](https://planpanther.npsboy.net)
 
 # How do you use it?
 ## Generate timetable:
