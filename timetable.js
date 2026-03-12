@@ -1315,6 +1315,16 @@ function add_subject(event) {
         alert("First exam is too soon! Give yourself at least 2 days.");
         add_subject.isProcessing = false; // Reset flag
         return;
+    }
+    
+    // Check if exam date is more than 3 months from today
+    const maxDate = new Date(today);
+    maxDate.setMonth(today.getMonth() + 3);
+    
+    if (examDate > maxDate) {
+        alert("Exam date is too far in the future! Please enter a date within 3 months from today.");
+        add_subject.isProcessing = false; // Reset flag
+        return;
     } else {
         subject_append.name = subject_name;
         subject_append.date = subject_date;
