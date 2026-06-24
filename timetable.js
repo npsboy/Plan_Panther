@@ -817,34 +817,35 @@ function generate_timetable() {
         if (reservedDay) {
             const reservedDate = new Date(reservedDay);
             if (reservedDate.getDay() === 0 || Holidays.includes(reservedDay)) {
-                // This subject has priority for Sunday/Holiday slots
-                // Try to assign at least one slot to this subject
+                // This subject has priority for Sunday/Holiday slots.
+                // Reserved (day-before-exam) slots are a guaranteed bonus and are
+                // NOT part of assignableTimeSlots, so they must NOT be counted
+                // against slotsToAssign (the proportional quota). Counting them
+                // here would steal from the quota and leave assignable days blank.
                 const morningSlot = reservedDay + '_morning';
                 const afternoonSlot = reservedDay + '_afternoon';
-                
-                if (assignedSlots < slotsToAssign && !usedTimeSlots.has(morningSlot)) {
+
+                if (!usedTimeSlots.has(morningSlot)) {
                     if (!timetable[reservedDay]) {
                         timetable[reservedDay] = [];
                     }
                     timetable[reservedDay].push(`Study: ${subject.name} (Morning)`);
                     usedTimeSlots.add(morningSlot);
-                    assignedSlots++;
                 }
-                
-                if (assignedSlots < slotsToAssign && !usedTimeSlots.has(afternoonSlot)) {
+
+                if (!usedTimeSlots.has(afternoonSlot)) {
                     if (!timetable[reservedDay]) {
                         timetable[reservedDay] = [];
                     }
                     timetable[reservedDay].push(`Study: ${subject.name} (Afternoon)`);
                     usedTimeSlots.add(afternoonSlot);
-                    assignedSlots++;
                 }
             } else {
-                // Regular reserved day
-                if (assignedSlots < slotsToAssign && !usedTimeSlots.has(reservedDay)) {
+                // Regular reserved day (also a guaranteed bonus, not counted
+                // against the quota). Usually already pre-assigned above.
+                if (!usedTimeSlots.has(reservedDay)) {
                     timetable[reservedDay] = `Study: ${subject.name}`;
                     usedTimeSlots.add(reservedDay);
-                    assignedSlots++;
                 }
             }
         }
