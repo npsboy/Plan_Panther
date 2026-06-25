@@ -769,10 +769,17 @@ function generate_timetable() {
         }
     });
     
-    // Then assign the allocated study time slots
-    subjects.forEach(subject => {
+    // Then assign the allocated study time slots.
+    // IMPORTANT: process subjects "most constrained first" (earliest exam first).
+    // A late-exam subject has a wide window and will otherwise grab the early days
+    // that an early-exam subject desperately needs — those early days are often the
+    // ONLY ones the early subject can study, so it gets starved down to just its
+    // reserved day. Sorting by exam date lets the tight-window subject claim its
+    // days first; the late-exam subject then fills whatever remains.
+    const subjectsByExamDate = [...subjects].sort((a, b) => new Date(a.date) - new Date(b.date));
+    subjectsByExamDate.forEach(subject => {
         const examDate = new Date(subject.date);
-        
+
         // Get available time slots: assignable slots before exam + exam day slots of other subjects before this exam
         let availableSlots = assignableTimeSlots.filter(slot => {
             const slotDate = slot.includes('_') ? slot.split('_')[0] : slot;
@@ -882,7 +889,52 @@ function generate_timetable() {
             assignedSlots++;
         }
     });
-    
+
+    // Fill pass: guarantee no assignable study day is left blank.
+    // The proportional allocation above can strand slots — e.g. an early-exam
+    // subject's quota can't be placed because a later-exam subject (processed
+    // first) already grabbed its only available days. That stranded quota would
+    // otherwise leave assignable days at the end of the range empty. Any leftover
+    // assignable slot is assigned here to an eligible subject (one whose exam is
+    // still ahead of that day). The latest-exam subject is always eligible for
+    // every in-range slot, so every assignable day gets filled.
+    assignableTimeSlots.forEach(slot => {
+        if (usedTimeSlots.has(slot)) {
+            return;
+        }
+
+        const slotDate = slot.includes('_') ? slot.split('_')[0] : slot;
+        const slotDateObj = new Date(slotDate);
+
+        // Eligible subjects: those whose exam is strictly after this day.
+        const eligible = subjects.filter(s => slotDateObj < new Date(s.date));
+        if (eligible.length === 0) {
+            return; // Safety net; shouldn't happen for in-range slots.
+        }
+
+        // Prefer the hardest subject so extra time lands where it's needed most.
+        eligible.sort((a, b) => Number(b.difficulty) - Number(a.difficulty));
+        const chosenName = eligible[0].name;
+
+        if (slot.includes('_')) {
+            // Sunday/Holiday slot
+            const [date, timeOfDay] = slot.split('_');
+            const timeLabel = timeOfDay === 'morning' ? 'Morning' : 'Afternoon';
+            if (!timetable[date]) {
+                timetable[date] = [];
+            }
+            if (Array.isArray(timetable[date])) {
+                timetable[date].push(`Study: ${chosenName} (${timeLabel})`);
+            } else {
+                timetable[date] = [timetable[date], `Study: ${chosenName} (${timeLabel})`];
+            }
+        } else {
+            // Regular day slot
+            timetable[slot] = `Study: ${chosenName}`;
+        }
+        usedTimeSlots.add(slot);
+    });
+
     // Shuffle study days to prevent more than 2 continuous days of the same subject
     shuffleToPreventContinuousStudy(timetable, subjectReservedDays);
     
