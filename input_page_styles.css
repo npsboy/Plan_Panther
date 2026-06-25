@@ -1051,3 +1051,50 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
         height: 22px;
     }
 }
+
+/* ── Day Tooltip ── */
+#day-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 1200;
+    background-color: #ffffff;
+    border: 1.5px solid #C9A84C;
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 160px;
+    max-width: 260px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+    pointer-events: none;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#day-tooltip.visible {
+    display: block;
+}
+
+.day-tooltip-date {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1C2B3A;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #E8ECF0;
+}
+
+.day-tooltip-event {
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.day-tooltip-empty {
+    font-size: 11px;
+    color: #999;
+    font-style: italic;
+    margin-top: 4px;
+}

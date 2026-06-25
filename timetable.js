@@ -389,6 +389,8 @@ function setupInputPageListeners() {
             setCalendarView('month');
         }
     });
+
+    setupDayTooltip();
 }
 
 
@@ -2448,4 +2450,115 @@ function closeMobileBottomBar() {
     bar.classList.remove('open');
     toggle.classList.remove('open');
     overlay.classList.remove('show');
+}
+
+// ── Day tooltip ──
+let _tooltipActiveDay = null;
+
+function _tooltipBuild(dayEl) {
+    const tooltip = document.getElementById('day-tooltip');
+    if (!tooltip) return;
+    const dateString = dayEl.dataset.date;
+    if (!dateString) return;
+
+    const date = new Date(dateString);
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const label = `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+
+    const eventData = currentTimetable ? currentTimetable[dateString] : null;
+    const events = eventData
+        ? (Array.isArray(eventData) ? eventData : [eventData])
+        : [];
+
+    let html = `<div class="day-tooltip-date">${label}</div>`;
+
+    if (events.length === 0) {
+        html += `<div class="day-tooltip-empty">No events</div>`;
+    } else {
+        events.forEach(raw => {
+            const parts = (raw.includes('Exam:') && raw.includes('Study:'))
+                ? raw.split(', ')
+                : [raw];
+            parts.forEach(text => {
+                let bg = '#5B8DEE';
+                if (text.startsWith('Exam:')) {
+                    bg = '#FF0000';
+                } else if (text.startsWith('Study:')) {
+                    const name = text.split(': ')[1].split(' (')[0];
+                    const subj = subjects.find(s => s.name === name);
+                    if (subj) bg = subj.color;
+                }
+                html += `<div class="day-tooltip-event" style="background-color:${bg}">${text}</div>`;
+            });
+        });
+    }
+    tooltip.innerHTML = html;
+}
+
+function _tooltipPosition(dayEl) {
+    const tooltip = document.getElementById('day-tooltip');
+    if (!tooltip) return;
+    const rect = dayEl.getBoundingClientRect();
+    const tw = 260, th = 220;
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    let left = rect.right + 8;
+    if (left + tw > vw - 8) left = rect.left - tw - 8;
+    if (left < 8) left = 8;
+
+    let top = rect.top;
+    if (top + th > vh - 8) top = vh - th - 8;
+    if (top < 8) top = 8;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top  = top  + 'px';
+}
+
+function showDayTooltip(dayEl) {
+    const tooltip = document.getElementById('day-tooltip');
+    if (!tooltip) return;
+    _tooltipBuild(dayEl);
+    _tooltipPosition(dayEl);
+    tooltip.classList.add('visible');
+}
+
+function hideDayTooltip() {
+    const tooltip = document.getElementById('day-tooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+    _tooltipActiveDay = null;
+}
+
+function setupDayTooltip() {
+    const calendar = document.getElementById('calendar');
+    if (!calendar) return;
+
+    calendar.addEventListener('mouseover', function(e) {
+        if (markBusyMode || markHolidayMode) return;
+        const day = e.target.closest('.calendar-day');
+        if (day) showDayTooltip(day);
+    });
+
+    calendar.addEventListener('mouseout', function(e) {
+        const day = e.target.closest('.calendar-day');
+        if (day && !day.contains(e.relatedTarget)) hideDayTooltip();
+    });
+
+    calendar.addEventListener('click', function(e) {
+        if (markBusyMode || markHolidayMode) return;
+        const day = e.target.closest('.calendar-day');
+        if (!day) return;
+        if (_tooltipActiveDay === day) {
+            hideDayTooltip();
+        } else {
+            _tooltipActiveDay = day;
+            showDayTooltip(day);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.calendar-day') && !e.target.closest('#day-tooltip')) {
+            hideDayTooltip();
+        }
+    });
 }
