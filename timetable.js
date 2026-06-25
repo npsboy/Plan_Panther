@@ -2326,3 +2326,21 @@ function handleSidebarOnAction() {
         closeSidebar();
     }
 }
+
+function toggleMobileBottomBar() {
+    const bar = document.getElementById('calendar_bottom_bar');
+    const toggle = document.getElementById('mobile-dropup-toggle');
+    const overlay = document.getElementById('dropup-overlay');
+    const isOpen = bar.classList.toggle('open');
+    toggle.classList.toggle('open', isOpen);
+    overlay.classList.toggle('show', isOpen);
+}
+
+function closeMobileBottomBar() {
+    const bar = document.getElementById('calendar_bottom_bar');
+    const toggle = document.getElementById('mobile-dropup-toggle');
+    const overlay = document.getElementById('dropup-overlay');
+    bar.classList.remove('open');
+    toggle.classList.remove('open');
+    overlay.classList.remove('show');
+}

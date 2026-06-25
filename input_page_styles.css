@@ -1,8 +1,13 @@
 /* ── Base ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     background-color: #F0F4FA;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 
 /* ── Layout ── */
@@ -548,6 +553,18 @@ body {
     width: 100%;
 }
 
+/* ── Mobile drop-up FAB (hidden on desktop) ── */
+#mobile-dropup-toggle {
+    display: none;
+}
+
+#dropup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 849;
+}
+
 /* ── Modal Card ── */
 #background_darkener {
     position: fixed;
@@ -737,9 +754,12 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
 
     #right_calendar {
         width: 100%;
-        padding: 0 10px 0 10px;
+        max-width: 100vw;
+        padding: 0 8px;
+        overflow-x: hidden;
         overflow-y: auto;
         height: 100vh;
+        padding-bottom: 90px;
     }
 
     #right_calendar h2 {
@@ -776,18 +796,22 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     }
 
     #calendar {
-        gap: 4px;
-        font-size: 11px;
+        gap: 3px;
+        font-size: 10px;
+        width: 100%;
     }
 
     .calendar-day {
-        padding: 5px 4px;
+        padding: 4px 3px;
         min-height: 50px;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .calendar-event {
-        font-size: 9px;
-        padding: 2px 4px;
+        font-size: 8px;
+        padding: 2px 3px;
+        max-width: 100%;
     }
 
     #calendar_navigation {
@@ -811,22 +835,41 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     }
 
     #day_labels {
-        font-size: 11px;
+        font-size: 10px;
         margin-bottom: 4px;
     }
 
+    /* Drop-up panel: fixed at bottom, hidden below screen by default */
     #calendar_bottom_bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #ffffff;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        z-index: 850;
         flex-direction: column;
-        gap: 8px;
-        padding: 10px 0;
-        margin-top: 8px;
+        gap: 10px;
+        padding: 16px 16px 28px;
+        margin-top: 0;
+        transform: translateY(110%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #calendar_bottom_bar.open {
+        transform: translateY(0);
+    }
+
+    #dropup-overlay.show {
+        display: block;
     }
 
     #mark_busy_button_bar,
     #mark_holiday_button_bar {
         width: 100%;
         font-size: 13px;
-        height: 42px;
+        height: 44px;
     }
 
     .export-dropdown {
@@ -835,7 +878,7 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
 
     .export {
         width: 100%;
-        height: 42px;
+        height: 44px;
     }
 
     #calendar_bottom_bar .export-options {
@@ -843,11 +886,47 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
         left: 50%;
         transform: translateX(-50%);
     }
+
+    /* Drop-up FAB */
+    #mobile-dropup-toggle {
+        display: flex;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 900;
+        width: 52px;
+        height: 52px;
+        background-color: #1C2B3A;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        padding: 0;
+        transition: background-color 0.2s;
+    }
+
+    #mobile-dropup-toggle:hover {
+        background-color: #2C3E50;
+    }
+
+    #mobile-dropup-toggle img {
+        width: 26px;
+        height: 26px;
+        filter: brightness(0) invert(1);
+        transition: transform 0.3s ease;
+    }
+
+    #mobile-dropup-toggle.open img {
+        transform: rotate(180deg);
+    }
 }
 
 @media screen and (max-width: 480px) {
     #right_calendar {
-        padding: 0 5px;
+        padding: 0 4px;
+        padding-bottom: 90px;
     }
 
     #right_calendar h2 {
@@ -856,18 +935,18 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     }
 
     #calendar {
-        gap: 3px;
-        font-size: 10px;
+        gap: 2px;
+        font-size: 9px;
     }
 
     .calendar-day {
-        padding: 3px;
+        padding: 3px 2px;
         min-height: 36px;
     }
 
     .calendar-event {
-        font-size: 8px;
-        padding: 1px 3px;
+        font-size: 7px;
+        padding: 1px 2px;
         margin-top: 2px;
     }
 
@@ -885,12 +964,12 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     }
 
     #day_labels {
-        font-size: 10px;
+        font-size: 9px;
     }
 
     #calendar_bottom_bar {
-        gap: 6px;
-        padding: 8px 0;
+        gap: 8px;
+        padding: 14px 14px 28px;
     }
 
     #sidebar-toggle {
@@ -903,5 +982,17 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     .hamburger-line {
         width: 20px;
         height: 2px;
+    }
+
+    #mobile-dropup-toggle {
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+    }
+
+    #mobile-dropup-toggle img {
+        width: 22px;
+        height: 22px;
     }
 }
