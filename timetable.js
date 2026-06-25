@@ -379,6 +379,16 @@ function setupInputPageListeners() {
             }
         }
     });
+
+    // Handle responsive view switching
+    window.addEventListener('resize', function() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && calendarView === 'month') {
+            setCalendarView('week');
+        } else if (!isMobile && calendarView === 'week') {
+            setCalendarView('month');
+        }
+    });
 }
 
 
