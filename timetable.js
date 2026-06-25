@@ -423,7 +423,7 @@ function generate_calendar() {
     // Update the current month label
     const monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"];
-    currentMonthLabel.textContent = `${monthNames[month]} ${year}`;
+    currentMonthLabel.innerHTML = `<span class="month-dec-line"></span><span class="month-dec-dot">&nbsp;•&nbsp;</span>${monthNames[month]} ${year}<span class="month-dec-dot">&nbsp;•&nbsp;</span><span class="month-dec-line"></span>`;
 
     const startOfMonth = new Date(Date.UTC(year, month, 1));
     const endOfMonth = new Date(Date.UTC(year, month + 1, 0));
@@ -1427,14 +1427,7 @@ function display_subjects() {
     
     subjects.forEach((subject, index) => {
         let subject_item = document.createElement("div");
-        subject_item.style.cssText = `
-            margin: 5px 10px;
-            padding: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-        `;
+        subject_item.className = "subject-item";
 
         // Determine difficulty color - now supports 1..5
         let difficultyColor = '#90EE90'; // Very Easy (1)
@@ -1454,38 +1447,32 @@ function display_subjects() {
         }
 
         let subject_info = document.createElement("div");
+        subject_info.className = "subject-info";
         subject_info.innerHTML = `
-            <span style="font-weight: bold;">${index + 1}. ${subject.name}</span> | 
-            <span>${subject.date}</span> | 
-            <span style="color: ${difficultyColor}; font-weight: bold;">${difficultyText}</span>
+            <div class="subject-name">${index + 1}. ${subject.name}</div>
+            <div class="subject-date">${subject.date}</div>
+            <div class="subject-difficulty" style="color: ${difficultyColor};">${difficultyText}</div>
         `;
 
         // Edit button
-        let edit_button = document.createElement("img");
-        edit_button.src = "edit_icon.png";
-        edit_button.style.cssText = `
-            width: 16px; 
-            height: 16px; 
-            cursor: pointer; 
-            padding: 4px;
-            border-radius: 3px;
-        `;
-        edit_button.title = "Edit subject";
-        edit_button.onclick = () => edit_subject(index);
+        let edit_button_wrap = document.createElement("div");
+        edit_button_wrap.className = "subject-action-btn";
+        let edit_img = document.createElement("img");
+        edit_img.src = "assets/icons/edit_icon.png";
+        edit_img.title = "Edit subject";
+        edit_img.onclick = () => edit_subject(index);
+        let edit_label = document.createElement("span");
+        edit_label.textContent = "edit";
+        edit_button_wrap.appendChild(edit_img);
+        edit_button_wrap.appendChild(edit_label);
 
         // Delete button
-        let delete_button = document.createElement("img");
-        delete_button.src = "delete.png";
-        delete_button.style.cssText = `
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 3px;
-            margin-left: 6px;
-        `;
-        delete_button.title = "Delete subject";
-        delete_button.onclick = () => {
+        let delete_button_wrap = document.createElement("div");
+        delete_button_wrap.className = "subject-action-btn";
+        let delete_img = document.createElement("img");
+        delete_img.src = "assets/icons/delete.png";
+        delete_img.title = "Delete subject";
+        delete_img.onclick = () => {
             if (confirm(`Delete subject '${subject.name}'?`)) {
                 subjects.splice(index, 1);
                 saveToLocalStorage();
@@ -1496,12 +1483,13 @@ function display_subjects() {
                 }
             }
         };
+        delete_button_wrap.appendChild(delete_img);
 
         // Button container
         let button_container = document.createElement("div");
-        button_container.style.display = "flex";
-        button_container.appendChild(edit_button);
-        button_container.appendChild(delete_button);
+        button_container.className = "subject-actions";
+        button_container.appendChild(edit_button_wrap);
+        button_container.appendChild(delete_button_wrap);
 
         subject_item.appendChild(subject_info);
         subject_item.appendChild(button_container);

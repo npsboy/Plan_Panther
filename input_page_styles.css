@@ -1,3 +1,11 @@
+/* ── Base ── */
+body {
+    background-color: #F0F4FA;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Layout ── */
 #left_container {
     display: flex;
     height: 100vh;
@@ -7,159 +15,563 @@
 #left_menu {
     display: flex;
     flex-direction: column;
-    background-color: white;
+    background-color: #ffffff;
     height: 100vh;
-    width: 350px;
+    width: 280px;
+    min-width: 280px;
     transition: transform 0.3s ease;
     z-index: 1000;
+    border-right: 1px solid #E8ECF0;
+    overflow: hidden;
 }
 
-/* Hamburger Menu Button */
-#sidebar-toggle {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1001;
-    background-color: transparent;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    width: 45px;
-    height: 45px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
+/* ── Brand Header ── */
+.brand-header {
+    padding: 24px 20px 16px;
+    text-align: center;
 }
 
-#sidebar-toggle:hover {
-    background-color: rgba(44, 62, 80, 0.1);
-    border-radius: 5px;
+.brand-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+    color: #1C2B3A;
+    letter-spacing: -0.5px;
 }
 
-.hamburger-line {
-    width: 25px;
-    height: 3px;
-    background-color: #2c3e50;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+.tagline {
+    margin: 6px 0 0;
+    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #C9A84C;
+    letter-spacing: 2.5px;
+    font-weight: 600;
 }
 
-/* Sidebar overlay for mobile */
-#sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+/* ── Section Header ── */
+.section-header {
+    padding: 6px 20px 6px;
+    border-top: 1px solid #EAEEF2;
+    border-bottom: 1px solid #EAEEF2;
+    background-color: #FAFBFC;
 }
 
-body {
-    background-color: #F0F4FA;
+.section-header span {
+    font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #8A9BB0;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 600;
 }
 
+/* ── Add Button ── */
 .button_holder1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 10px;
+    margin: 12px 16px;
 }
 
 .add {
-    height: 40px;
-    width: 150px;
-    background-color: #407CFF;
-    border-radius: 7px;
+    height: 44px;
+    width: 100%;
+    background-color: #1C2B3A;
+    border-radius: 8px;
     border: none;
     color: white;
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .add:hover {
-    background-color: #97B7FF;
-    cursor: pointer;
+    background-color: #2C3E50;
 }
 
+/* ── Subjects List ── */
 #subjects_list {
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 300px);
-    padding-left: 10px;
-    padding-right: 10px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 0 8px;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
 }
 
-li img {
-    height: 25px;
-    width: 20px;
-    cursor: pointer;
-    margin-left: 10px;
-    vertical-align: middle;
+.empty-state-text {
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+    padding: 0 20px;
+    line-height: 1.5;
 }
 
-ol {
+/* Subject list items (created in JS) */
+.subject-item {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.subject-info .subject-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1C2B3A;
+}
+
+.subject-info .subject-date {
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+}
+
+.subject-info .subject-difficulty {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.subject-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.subject-action-btn {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    gap: 2px;
+}
+
+.subject-action-btn img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.65;
+}
+
+.subject-action-btn img:hover {
+    opacity: 1;
+}
+
+.subject-action-btn span {
+    font-size: 9px;
+    color: #999;
+}
+
+/* ── Sidebar Bottom ── */
+.sidebar-bottom {
+    border-top: 1px solid #EAEEF2;
+    padding: 8px 0 4px;
 }
 
 .submit {
-    height: 40px;
-    width: 170px;
-    background-color: #2C3E50;
-    border-radius: 7px;
+    height: 44px;
+    width: 100%;
+    background-color: #1C2B3A;
+    border-radius: 8px;
     border: none;
     color: white;
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    letter-spacing: 0.3px;
 }
 
 .submit:hover {
-    background-color: #8DA7C1;
+    background-color: #2C3E50;
+}
+
+.start-afresh-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 4px 16px 8px;
     cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.start-afresh-row:hover {
+    background-color: #FFF0F0;
+}
+
+.start-afresh-row span {
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #444;
+}
+
+.start-afresh-row img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+}
+
+/* ── Right Calendar ── */
+#right_calendar {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 16px 20px 0 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#right_calendar h2 {
+    text-align: center;
+    color: #1C2B3A;
+    font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+    font-size: 26px;
+    margin: 4px 0 16px;
+}
+
+/* ── Calendar Navigation ── */
+#calendar_navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+#calendar_navigation button {
+    background-color: #1C2B3A;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+#calendar_navigation button:hover {
+    background-color: #2C3E50;
+}
+
+#current_month {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #1C2B3A;
+    font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+    gap: 8px;
+    padding: 0 12px;
+}
+
+.month-dec-line {
+    display: inline-block;
+    flex: 1;
+    max-width: 70px;
+    height: 1.5px;
+    background: #C9A84C;
+    vertical-align: middle;
+}
+
+.month-dec-dot {
+    color: #C9A84C;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* ── Day Labels ── */
+#day_labels {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8A9BB0;
+    margin-bottom: 8px;
+}
+
+/* ── Calendar Grid ── */
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    flex: 1;
+}
+
+.calendar-day {
+    border: 1px solid #E8ECF0;
+    border-radius: 6px;
+    padding: 8px 6px;
+    min-height: 70px;
+    position: relative;
+    background-color: #ffffff;
+}
+
+.calendar-day span {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1C2B3A;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.calendar-day.overflow-day span {
+    color: #BDC5CF;
+    font-weight: 400;
+}
+
+.calendar-day.sunday {
+    background-color: #FFF5F5;
+    border-color: #FFE8E8;
+}
+
+.calendar-day.today span {
+    color: #1C2B3A;
+    background-color: #E8EFFF;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.calendar-day:hover {
+    cursor: pointer;
+    border-color: #C9A84C;
+}
+
+/* ── Calendar Events ── */
+.calendar-event {
+    background-color: #5B8DEE;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 3px;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* ── Busy Day ── */
+.calendar-day.busy {
+    background-color: #FFF8E0 !important;
+    border-color: #F0C040 !important;
+}
+
+.calendar-day.busy::after {
+    content: "Busy on this day";
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    background-color: #F0C040;
+    color: #5A4200;
+    font-size: 9px;
+    padding: 1px 3px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* ── Holiday ── */
+.calendar-day.holiday {
+    background-color: #FFF0F0 !important;
+    border-color: #FFB3B3 !important;
+}
+
+/* ── Calendar Bottom Bar ── */
+#calendar_bottom_bar {
+    display: flex;
+    justify-content: stretch;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0;
+    margin-top: 12px;
+}
+
+#mark_busy_button_bar {
+    flex: 1;
+    background-color: #C9A84C;
+    color: white;
+    border: none;
+    padding: 12px 10px;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#mark_busy_button_bar img {
+    width: 18px;
+    height: 18px;
+}
+
+#mark_busy_button_bar:hover {
+    background-color: #B8953E;
+}
+
+#mark_busy_button_bar.active {
+    background-color: #E05050;
+}
+
+#mark_holiday_button_bar {
+    flex: 1;
+    background-color: #C06B7A;
+    color: white;
+    border: none;
+    padding: 12px 10px;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#mark_holiday_button_bar img {
+    width: 18px;
+    height: 18px;
+}
+
+#mark_holiday_button_bar:hover {
+    background-color: #A85A68;
+}
+
+#mark_holiday_button_bar.active {
+    background-color: #C03030;
+}
+
+/* ── Export Dropdown ── */
+.export-dropdown {
+    flex: 1;
+    position: relative;
+    display: flex;
 }
 
 .export {
-    height: 40px;
-    width: 200px;
-    background-color: #28a745;
-    border-radius: 7px;
+    flex: 1;
+    height: 48px;
+    background-color: #2D6A4F;
+    border-radius: 8px;
     border: none;
     color: white;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.export img {
+    width: 18px;
+    height: 18px;
 }
 
 .export:hover {
-    background-color: #5cb85c;
-    cursor: pointer;
+    background-color: #245A42;
 }
 
+.export-options {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    border-radius: 8px;
+    overflow: hidden;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 6px;
+}
+
+.export-options.show {
+    display: block;
+}
+
+.export-option {
+    color: #1C2B3A;
+    padding: 12px 16px;
+    display: block;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    transition: background-color 0.15s;
+}
+
+.export-option:hover {
+    background-color: #F0F4FA;
+}
+
+/* ── Mobile submit button (hidden on desktop) ── */
+#mobile_submit_button {
+    display: none;
+    width: 100%;
+}
+
+/* ── Modal Card ── */
 #background_darkener {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.45);
     display: none;
     z-index: 1100;
+    align-items: center;
+    justify-content: center;
 }
 
 #card {
-    position: fixed;
-    top: 15%;
-    left: 25%;
     background-color: white;
-    width: 370px;
+    width: 380px;
     min-height: 380px;
     height: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
     display: flex;
     flex-direction: column;
-    padding-top: 40px;
-    padding-bottom: 30px;
+    padding: 40px 0 30px;
     z-index: 1101;
 }
 
@@ -175,49 +587,47 @@ ol {
     width: 300px;
     height: 40px;
     border: none;
-    font-size: 30px;
+    font-size: 28px;
     font-family: Arial, Helvetica, sans-serif;
-    border-bottom: 2px solid #3B3838;
+    border-bottom: 2px solid #D0D0D0;
     background-color: white;
     cursor: pointer;
 }
 
 #subject_name:focus {
     outline: none;
-    border-bottom: 2px solid #407CFF;
+    border-bottom: 2px solid #1C2B3A;
 }
 
 #subject_name_other {
     width: 300px;
     height: 40px;
     border: none;
-    font-size: 30px;
+    font-size: 28px;
     font-family: Arial, Helvetica, sans-serif;
-    border-bottom: 2px solid #3B3838;
+    border-bottom: 2px solid #D0D0D0;
     margin-top: 10px;
 }
 
 #subject_name_other:focus {
     outline: none;
-    border-bottom: 2px solid #407CFF;
+    border-bottom: 2px solid #1C2B3A;
 }
 
 #date_OE {
     display: flex;
     gap: 10px;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     color: #404040;
+    align-items: center;
 }
 
 #subject_date {
-    width: 140px;
+    width: 150px;
     height: 30px;
-    align-items: top;
-    justify-content: top;
     border: none;
-    padding-top: 0px;
-    font-size: 18px;
+    font-size: 16px;
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -229,8 +639,9 @@ ol {
     display: flex;
     gap: 10px;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     color: #404040;
+    align-items: center;
 }
 
 input[type=range] {
@@ -253,305 +664,56 @@ input[type=range]::-webkit-slider-thumb {
     cursor: pointer;
 }
 
-input.lightgreen_thumb::-webkit-slider-thumb {
-    background: #90EE90;
-}
+input.lightgreen_thumb::-webkit-slider-thumb { background: #90EE90; }
+input.green_thumb::-webkit-slider-thumb { background: #00B050; }
+input.red_thumb::-webkit-slider-thumb { background: #FF0000; }
+input.darkred_thumb::-webkit-slider-thumb { background: #8B0000; }
+input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
 
-input.green_thumb::-webkit-slider-thumb {
-    background: #00B050;
-}
-
-input.red_thumb::-webkit-slider-thumb {
-    background: #FF0000;
-}
-
-input.darkred_thumb::-webkit-slider-thumb {
-    background: #8B0000;
-}
-
-input.yellow_thumb::-webkit-slider-thumb {
-    background: #FFCC00;
-}
-
-#right_calendar {
-    flex: 1;
-    background-color: #FFFFFF;
-    padding: 20px 20px 0 20px;
-    padding-top: 0px;
-    overflow-y: auto;
-    border-left: 1px solid #CCC;
-    display: flex;
-    flex-direction: column;
-}
-
-#calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 14px;
-    flex: 1;
-}
-
-.calendar-day {
-    border: 1px solid #CCC;
+/* ── Hamburger ── */
+#sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background-color: transparent;
+    border: none;
     padding: 10px;
-    min-height: 40px;
-    position: relative;
-}
-
-.calendar-day span {
-    font-weight: bold;
-}
-
-.calendar-event {
-    background-color: #407CFF;
-    color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
-    margin-top: 5px;
-    font-size: 12px;
-}
-
-#calendar_navigation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#calendar_navigation button {
-    background-color: #407CFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
     cursor: pointer;
-}
-
-#calendar_navigation button:hover {
-    background-color: #97B7FF;
-}
-
-#current_month {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-#day_labels {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.calendar-day.overflow-day {
-    color: #A0A0A0; /* Lighter color for overflow days */
-}
-
-.calendar-day.sunday {
-    background-color: #ffe6e6; /* Light red background for Sundays */
-    border-color: #ffcccc; /* Slightly darker border for Sundays */
-}
-#subjects_list {
-    overflow: auto;
-    max-height: 500px; /* Set a maximum height for the list */
-}
-
-/* Busy Day Styling */
-.calendar-day.busy {
-    background-color: #FFE066 !important;
-    border-color: #FFC000 !important;
-    cursor: pointer;
-}
-
-.calendar-day.busy::after {
-    content: "Busy on this day";
-    position: absolute;
-    bottom: 2px;
-    left: 2px;
-    right: 2px;
-    background-color: #FFC000;
-    color: white;
-    font-size: 10px;
-    padding: 1px 3px;
-    border-radius: 2px;
-    text-align: center;
-}
-
-/* Add hover effect for calendar days in mark busy mode */
-.calendar-day:hover {
-    cursor: pointer;
-    opacity: 0.8;
-}
-
-/* Export Dropdown Styles */
-.export-dropdown {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.export-options {
-    display: none;
-    position: absolute;
-    background-color: white;
-    min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1000;
-    border-radius: 7px;
-    overflow: hidden;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 5px;
-}
-
-.export-options.show {
-    display: block;
-}
-
-.export-option {
-    color: #2C3E50;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
-.export-option:hover {
-    background-color: #F0F4FA;
-}
-
-/* Today's date styling */
-.calendar-day.today span {
-    color: #407CFF;
-    border: 2px solid #407CFF;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
+    width: 45px;
+    height: 45px;
+    flex-direction: column;
     justify-content: center;
-    font-weight: bold;
-}
-
-/* Clear All Data button styling */
-#clear-all-btn:hover {
-    background-color: #c82333 !important;
-    cursor: pointer;
-}
-
-/* Calendar Bottom Bar */
-#calendar_bottom_bar {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
     align-items: center;
-    padding: 15px 20px;
-    border-top: 2px solid #E0E0E0;
-    background-color: #F8F9FA;
-    margin-top: 20px;
-    border-radius: 0 0 10px 10px;
+    gap: 5px;
 }
 
-/* Mark Busy Button in Bottom Bar */
-#mark_busy_button_bar {
-    background-color: #FFC000;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    height: 40px;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+#sidebar-toggle:hover {
+    background-color: rgba(28, 43, 58, 0.08);
+    border-radius: 6px;
+}
+
+.hamburger-line {
+    width: 25px;
+    height: 3px;
+    background-color: #1C2B3A;
+    border-radius: 2px;
     transition: all 0.3s ease;
-    white-space: nowrap;
 }
 
-#mark_busy_button_bar:hover {
-    background-color: #FFB000;
-    transform: scale(1.05);
-}
-
-#mark_busy_button_bar.active {
-    background-color: #FF6B6B;
-    white-space: normal;
-    line-height: 1.2;
-}
-
-/* Mark Holiday Button in Bottom Bar */
-#mark_holiday_button_bar {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    height: 40px;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-#mark_holiday_button_bar:hover {
-    background-color: #ff5252;
-    transform: scale(1.05);
-}
-
-#mark_holiday_button_bar.active {
-    background-color: #d32f2f;
-    white-space: normal;
-    line-height: 1.2;
-}
-
-/* Holiday Styling */
-.calendar-day.holiday {
-    background-color: #ffe0e0 !important;
-    border-color: #ffb3b3 !important;
-    cursor: pointer;
-}
-
-/* Mobile submit button - hidden by default */
-#mobile_submit_button {
+#sidebar-overlay {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 999;
 }
 
-/* Update export dropdown positioning for bottom bar */
-#calendar_bottom_bar .export-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-#calendar_bottom_bar .export-options {
-    display: none;
-    position: absolute;
-    background-color: white;
-    min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1000;
-    border-radius: 7px;
-    overflow: hidden;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 5px;
-}
-
-#calendar_bottom_bar .export-options.show {
-    display: block;
-}
-
-/* Mobile Responsiveness */
+/* ── Responsive ── */
 @media screen and (max-width: 768px) {
     #sidebar-toggle {
         display: flex;
@@ -566,7 +728,7 @@ input.yellow_thumb::-webkit-slider-thumb {
         top: 0;
         left: 0;
         transform: translateX(-100%);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
     }
 
     #left_menu.show {
@@ -575,39 +737,33 @@ input.yellow_thumb::-webkit-slider-thumb {
 
     #right_calendar {
         width: 100%;
-        border-left: none;
-        padding: 0px 10px 0px 10px;
+        padding: 0 10px 0 10px;
         overflow-y: auto;
         height: 100vh;
     }
 
     #right_calendar h2 {
         margin-top: 55px;
-        margin-bottom: 5px;
-        font-size: 18px;
+        margin-bottom: 8px;
+        font-size: 20px;
     }
 
-    /* Show mobile submit button below calendar */
     #mobile_submit_button {
         display: block !important;
         width: 100%;
-        padding: 0px;
-        margin: 0px;
+        padding: 0;
+        margin: 0;
     }
 
     #mobile_submit_button .submit {
         width: 100%;
-        height: 40px;
+        height: 42px;
         font-size: 14px;
-        font-weight: bold;
     }
 
     #card {
-        left: 50%;
-        transform: translateX(-50%);
-        top: 10%;
-        width: 90%;
-        max-width: 370px;
+        width: 92%;
+        max-width: 380px;
     }
 
     #details {
@@ -620,29 +776,29 @@ input.yellow_thumb::-webkit-slider-thumb {
     }
 
     #calendar {
-        gap: 5px;
-        font-size: 12px;
+        gap: 4px;
+        font-size: 11px;
     }
 
     .calendar-day {
-        padding: 5px;
-        min-height: 30px;
+        padding: 5px 4px;
+        min-height: 50px;
     }
 
     .calendar-event {
-        font-size: 10px;
-        padding: 1px 3px;
+        font-size: 9px;
+        padding: 2px 4px;
     }
 
     #calendar_navigation {
         flex-direction: row;
-        gap: 10px;
+        gap: 8px;
         margin-top: 5px;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
     }
 
     #calendar_navigation button {
-        font-size: 12px;
+        font-size: 11px;
         padding: 6px 8px;
     }
 
@@ -650,30 +806,27 @@ input.yellow_thumb::-webkit-slider-thumb {
         font-size: 14px;
     }
 
+    .month-dec-line {
+        max-width: 30px;
+    }
+
     #day_labels {
-        font-size: 12px;
-        margin-bottom: 5px;
+        font-size: 11px;
+        margin-bottom: 4px;
     }
 
     #calendar_bottom_bar {
         flex-direction: column;
         gap: 8px;
-        padding: 8px 10px;
-        margin-top: 10px;
+        padding: 10px 0;
+        margin-top: 8px;
     }
 
-    #mark_busy_button_bar {
-        width: 100%;
-        font-size: 12px;
-        padding: 8px;
-        height: auto;
-    }
-
+    #mark_busy_button_bar,
     #mark_holiday_button_bar {
         width: 100%;
-        font-size: 12px;
-        padding: 8px;
-        height: auto;
+        font-size: 13px;
+        height: 42px;
     }
 
     .export-dropdown {
@@ -682,7 +835,7 @@ input.yellow_thumb::-webkit-slider-thumb {
 
     .export {
         width: 100%;
-        height: 40px;
+        height: 42px;
     }
 
     #calendar_bottom_bar .export-options {
@@ -694,13 +847,12 @@ input.yellow_thumb::-webkit-slider-thumb {
 
 @media screen and (max-width: 480px) {
     #right_calendar {
-        padding: 0px 5px 0px 5px;
+        padding: 0 5px;
     }
 
     #right_calendar h2 {
         margin-top: 50px;
-        font-size: 16px;
-        margin-bottom: 3px;
+        font-size: 17px;
     }
 
     #calendar {
@@ -710,57 +862,35 @@ input.yellow_thumb::-webkit-slider-thumb {
 
     .calendar-day {
         padding: 3px;
-        min-height: 25px;
+        min-height: 36px;
     }
 
     .calendar-event {
         font-size: 8px;
-        padding: 1px 2px;
+        padding: 1px 3px;
         margin-top: 2px;
     }
 
     #calendar_navigation button {
         font-size: 10px;
-        padding: 5px;
+        padding: 5px 7px;
     }
 
     #current_month {
-        font-size: 11px;
+        font-size: 12px;
+    }
+
+    .month-dec-line {
+        max-width: 20px;
     }
 
     #day_labels {
-        font-size: 10px;
-        margin-bottom: 3px;
-    }
-
-    .calendar-day span {
         font-size: 10px;
     }
 
     #calendar_bottom_bar {
         gap: 6px;
-        padding: 6px 5px;
-        margin-top: 8px;
-    }
-
-    #mobile_submit_button .submit {
-        height: 38px;
-        font-size: 12px;
-    }
-
-    #mark_busy_button_bar {
-        font-size: 11px;
-        padding: 6px;
-    }
-
-    #mark_holiday_button_bar {
-        font-size: 11px;
-        padding: 6px;
-    }
-
-    .export {
-        height: 38px;
-        font-size: 13px;
+        padding: 8px 0;
     }
 
     #sidebar-toggle {
