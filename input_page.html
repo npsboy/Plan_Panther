@@ -51,6 +51,10 @@
                 <button id="prev_month">< Previous</button>
                 <span id="current_month"></span>
                 <button id="next_month">Next ></button>
+                <div id="view_toggle">
+                    <button id="btn_month_view" class="view-toggle-btn active" onclick="setCalendarView('month')" title="Month view"><img src="assets/icons/calendar_view_month.png" alt="Month"></button>
+                    <button id="btn_week_view" class="view-toggle-btn" onclick="setCalendarView('week')" title="Week view"><img src="assets/icons/calendar_view_week.png" alt="Week"></button>
+                </div>
             </div>
             <div id="day_labels">
                 <div>Sun</div>
@@ -70,7 +74,7 @@
                     <button class="button submit">Make Study Plan</button>
                 </div>
 
-                <button id="mark_busy_button_bar" onclick="toggle_mark_busy_mode()"><img src="assets/icons/busy.png" alt="busy"> Mark days when you are not free</button>
+                <button id="mark_busy_button_bar" onclick="toggle_mark_busy_mode()"><img src="assets/icons/busy.png" alt="busy"> Mark Busy</button>
 
                 <button id="mark_holiday_button_bar" onclick="toggle_mark_holiday_mode()"><img src="assets/icons/holiday.png" alt="holiday"> Mark Holidays</button>
 
@@ -127,7 +131,7 @@
 
             <br><br>
 
-            <button class="button add" style="align-self: center;" onclick="add_subject()"> Save  </button>
+            <button class="button add" style="align-self: center; width: 80%;" onclick="add_subject()"> Save  </button>
 
         </div>
     </div>

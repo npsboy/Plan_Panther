@@ -10,6 +10,8 @@ let DaysWhenBusy = []; // Array to store busy days
 let markBusyMode = false; // Flag for mark busy mode
 let Holidays = []; // Array to store holidays
 let markHolidayMode = false; // Flag for mark holiday mode
+let calendarView = 'month'; // 'month' or 'week'
+let currentWeekStart = null; // Sunday of the currently displayed week
 
 // localStorage utility functions
 function saveToLocalStorage() {
@@ -252,7 +254,17 @@ function setupInputPageListeners() {
     
     // Initialize the subjects display
     display_subjects();
-    
+
+    // Default to week view on mobile
+    if (window.innerWidth <= 768) {
+        calendarView = 'week';
+        currentWeekStart = getWeekStart(today);
+        const monthBtn = document.getElementById('btn_month_view');
+        const weekBtn = document.getElementById('btn_week_view');
+        if (monthBtn) monthBtn.classList.remove('active');
+        if (weekBtn) weekBtn.classList.add('active');
+    }
+
     // If we have a saved timetable and subjects, apply it to the calendar
     if (currentTimetable && subjects.length > 0) {
         generate_calendar(); // Generate calendar structure
@@ -377,22 +389,32 @@ function change_month(direction) {
         return;
     }
     change_month.isProcessing = true;
-    
-    // Create a new date object to avoid modifying the original
-    const newMonth = new Date(currentMonth);
-    newMonth.setUTCMonth(newMonth.getUTCMonth() + direction);
-    currentMonth = newMonth;
-    
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"];
-    console.log('Changed month to:', `${monthNames[currentMonth.getUTCMonth()]} ${currentMonth.getUTCFullYear()}`); // Debug
-    
+
+    if (calendarView === 'week') {
+        if (!currentWeekStart) currentWeekStart = getWeekStart(currentMonth);
+        currentWeekStart = new Date(Date.UTC(
+            currentWeekStart.getUTCFullYear(),
+            currentWeekStart.getUTCMonth(),
+            currentWeekStart.getUTCDate() + (direction * 7)
+        ));
+        currentMonth = new Date(currentWeekStart);
+    } else {
+        // Create a new date object to avoid modifying the original
+        const newMonth = new Date(currentMonth);
+        newMonth.setUTCMonth(newMonth.getUTCMonth() + direction);
+        currentMonth = newMonth;
+
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        console.log('Changed month to:', `${monthNames[currentMonth.getUTCMonth()]} ${currentMonth.getUTCFullYear()}`); // Debug
+    }
+
     generate_calendar(); // Generate calendar structure
-    // If we have a timetable, apply it to the new month view
+    // If we have a timetable, apply it to the new view
     if (currentTimetable) {
         update_calendar(currentTimetable);
     }
-    
+
     // Reset the flag after a short delay to prevent rapid clicking
     setTimeout(() => {
         change_month.isProcessing = false;
@@ -412,7 +434,80 @@ function exportToGoogleCalendar() {
     alert('Export to Google Calendar functionality to be implemented');
 }
 
+function getWeekStart(date) {
+    const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    d.setUTCDate(d.getUTCDate() - d.getUTCDay());
+    return d;
+}
+
+function setCalendarView(view) {
+    calendarView = view;
+
+    const monthBtn = document.getElementById('btn_month_view');
+    const weekBtn = document.getElementById('btn_week_view');
+    if (monthBtn) monthBtn.classList.toggle('active', view === 'month');
+    if (weekBtn) weekBtn.classList.toggle('active', view === 'week');
+
+    if (view === 'week') {
+        currentWeekStart = getWeekStart(today);
+    } else {
+        if (currentWeekStart) {
+            currentMonth = new Date(Date.UTC(currentWeekStart.getUTCFullYear(), currentWeekStart.getUTCMonth(), 1));
+        }
+    }
+
+    generate_calendar();
+    if (currentTimetable) {
+        update_calendar(currentTimetable);
+    }
+}
+
+function generate_week_calendar() {
+    const calendar = document.getElementById("calendar");
+    const currentMonthLabel = document.getElementById("current_month");
+    calendar.innerHTML = "";
+
+    if (!currentWeekStart) currentWeekStart = getWeekStart(currentMonth);
+
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+
+    const weekEnd = new Date(Date.UTC(currentWeekStart.getUTCFullYear(), currentWeekStart.getUTCMonth(), currentWeekStart.getUTCDate() + 6));
+    const startLabel = `${monthNames[currentWeekStart.getUTCMonth()].slice(0, 3)} ${currentWeekStart.getUTCDate()}`;
+    const endLabel = `${monthNames[weekEnd.getUTCMonth()].slice(0, 3)} ${weekEnd.getUTCDate()}, ${weekEnd.getUTCFullYear()}`;
+    currentMonthLabel.innerHTML = `<span class="month-dec-line"></span><span class="month-dec-dot">&nbsp;•&nbsp;</span>${startLabel} – ${endLabel}<span class="month-dec-dot">&nbsp;•&nbsp;</span><span class="month-dec-line"></span>`;
+
+    const todayString = today.toISOString().split("T")[0];
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(Date.UTC(currentWeekStart.getUTCFullYear(), currentWeekStart.getUTCMonth(), currentWeekStart.getUTCDate() + i));
+        const dayElement = document.createElement("div");
+        dayElement.classList.add("calendar-day", "week-view-day");
+
+        if (date.getUTCDay() === 0) dayElement.classList.add("sunday");
+
+        dayElement.innerHTML = `<span>${date.getUTCDate()}</span>`;
+        dayElement.dataset.date = date.toISOString().split("T")[0];
+
+        if (dayElement.dataset.date === todayString) dayElement.classList.add("today");
+        if (DaysWhenBusy.includes(dayElement.dataset.date)) dayElement.classList.add("busy");
+        if (Holidays.includes(dayElement.dataset.date)) dayElement.classList.add("holiday");
+
+        dayElement.addEventListener('click', function() {
+            if (markBusyMode) toggleBusyDay(this);
+            else if (markHolidayMode) toggleHoliday(this);
+        });
+
+        calendar.appendChild(dayElement);
+    }
+}
+
 function generate_calendar() {
+    if (calendarView === 'week') {
+        generate_week_calendar();
+        return;
+    }
+
     const calendar = document.getElementById("calendar");
     const currentMonthLabel = document.getElementById("current_month");
     calendar.innerHTML = ""; // Clear existing calendar

@@ -266,6 +266,47 @@ body {
     background-color: #2C3E50;
 }
 
+#view_toggle {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.view-toggle-btn {
+    background: transparent !important;
+    border: 1.5px solid transparent !important;
+    border-radius: 6px !important;
+    padding: 5px !important;
+    cursor: pointer;
+    opacity: 0.45;
+    transition: opacity 0.2s, border-color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-toggle-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    filter: invert(1);
+}
+
+.view-toggle-btn.active {
+    opacity: 1;
+    border-color: #C9A84C !important;
+    background-color: rgba(201, 168, 76, 0.15) !important;
+}
+
+.view-toggle-btn:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.calendar-day.week-view-day {
+    min-height: 160px;
+}
+
 #current_month {
     flex: 1;
     display: flex;
@@ -345,7 +386,7 @@ body {
 
 .calendar-day.today span {
     color: #1C2B3A;
-    background-color: #E8EFFF;
+    background-color: #ccd7f0;
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -824,6 +865,20 @@ input.yellow_thumb::-webkit-slider-thumb { background: #FFCC00; }
     #calendar_navigation button {
         font-size: 11px;
         padding: 6px 8px;
+    }
+
+    #view_toggle {
+        gap: 2px;
+        margin-left: 4px;
+    }
+
+    .view-toggle-btn img {
+        width: 16px;
+        height: 16px;
+    }
+
+    .calendar-day.week-view-day {
+        min-height: 100px;
     }
 
     #current_month {
