@@ -1,6 +1,6 @@
 <picture>
-  <source srcset="Banner_dark_mode.png" media="(prefers-color-scheme: dark)">
-  <img src="Banner_light_mode.png" alt="Banner" width="400">
+  <source srcset="assets/images/Banner_dark_mode.png" media="(prefers-color-scheme: dark)">
+  <img src="assets/images/Banner_light_mode.png" alt="Banner" width="400">
 </picture>
 <br> <br>
 A web app that helps students create a study plan for their exams.
